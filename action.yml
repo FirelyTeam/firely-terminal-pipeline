@@ -1,6 +1,3 @@
-
-# Run Firely.Terminal and the offical FHIR Java Validator in a GH Action pipeline
-
 name: Firely.Terminal (GitHub Actions)
 description: Run Firely.Terminal and the offical FHIR Java Validator in a GitHub Actions pipeline
 
@@ -12,140 +9,69 @@ inputs:
     description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
     required: false
 
-# Controls when the action will run. 
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+# Validate all resources using Firely Terminal 
+runs:
+  using: "composite"
+  steps:
+    # Install .NET runtime
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+        dotnet-version: 3.1.x
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # First validate all resources using Firely Terminal 
-  Validation_Firely_Terminal:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    env:
-      FIRELY_TERMINAL_VERSION: 2.0.0
-      
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      # Install .NET runtime
-      - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v1.7.2
-        with:
-          dotnet-version: 3.1.x
-
-      # Test SDK version
-      - name: Check .NET SDK Version
-        run: |
-          dotnet --version
+    # Test SDK version
+    - name: Check .NET SDK Version
+      run: |
+        dotnet --version
           
-      # Install Firely Terminal
-      - name: Install Firely Terminal
-        run: |
-          dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION
+    # Install Firely Terminal
+    - name: Install Firely Terminal
+      run: |
+        dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION
       
-      # Test Firely Terminal install
-      - name: Check Firely Terminal Version
-        run: |
-          fhir -v
+    # Test Firely Terminal install
+    - name: Check Firely Terminal Version
+      run: |
+        fhir -v
           
-      # Add resources for validation to the stack
-      # Examples need to go last otherwise we can't find the profiles used in the examples anymore on the stack when validating (the stack is FIFO)
-      - name: Add resources to the Firely Terminal stack
-        run: |
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
-          do 
-            echo Accessing "$p" and pushing resources to the stack...
-            if [ -d "$GITHUB_WORKSPACE/$p" ]; then
-              cd $GITHUB_WORKSPACE/$p
-              fhir push .
-            else
-              echo Cannot access "$p" as the path does not exist
-            fi
-          done
+    # Add resources for validation to the stack
+    # Examples need to go last otherwise we can't find the profiles used in the examples anymore on the stack when validating (the stack is FIFO)
+    - name: Add resources to the Firely Terminal stack
+      run: |
+        for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
+        do 
+          echo Accessing "$p" and pushing resources to the stack...
+          if [ -d "$GITHUB_WORKSPACE/$p" ]; then
+            cd $GITHUB_WORKSPACE/$p
+            fhir push .
+          else
+            echo Cannot access "$p" as the path does not exist
+          fi
+        done
       
-      # Restore all dependencies listed in the package.json file (need to be on the root level)
-      - name: FHIR Dependency restore
-        run: |
-          fhir restore
+    # Restore all dependencies listed in the package.json file (need to be on the root level)
+    - name: FHIR Dependency restore
+      run: |
+        fhir restore
     
-      # Validate all conformance resources on the stack
-      - name: Validate all conformance resources in scope of the repository
-        run: | 
-          while true; do
-            currentResource=$(fhir peek)
-            if [[ "$currentResource" == *"The stack is empty."* ]]; then
-              echo "Validation was executed for all resources on the stack"
-              break
-            fi
-            echo Validating $currentResource ...
+    # Validate all conformance resources on the stack
+    - name: Validate all conformance resources in scope of the repository
+      run: | 
+        while true; do
+          currentResource=$(fhir peek)
+          if [[ "$currentResource" == *"The stack is empty."* ]]; then
+            echo "Validation was executed for all resources on the stack"
+            break
+          fi
+          echo Validating $currentResource ...
             
-            result=$(fhir validate)
-            echo $result
-            if [[ "$result" == *"INVALID"* ]]; then
-              exit 1
-            fi
+          result=$(fhir validate)
+          echo $result
+          if [[ "$result" == *"INVALID"* ]]; then
+            exit 1
+          fi
             
-            fhir pop > /dev/null
-          done
+          fhir pop > /dev/null
+        done
       
      #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
-          
-  # Addionally validate all resources using the Java validator
-  Validation_Java_Validator:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    env:
-      JAVA_VALIDATOR_VERSION: 5.3.8
-      FHIR_VERSION: "4.0"
-    
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      
-      - name: Download Java Validator
-        run: | 
-          wget https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
-      
-      - name: Setup Java JDK
-        uses: actions/setup-java@v1.4.3
-        with:
-          java-version: 1.8
-        
-      - name: Get IG Parameter
-        uses: sergeysova/jq-action@v2
-        id: ig
-        with:
-          cmd: jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json
-
-      - name: Validate all conformance resources in scope of the repository
-        run: |
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
-          do  
-            unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
-            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG
-          done
-      
-      - name: Validate all example resources in scope of the repository
-        continue-on-error: true
-        run: |          
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
-          do  
-            COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
-          done
-          
-          for p in $PATH_TO_EXAMPLES; 
-          do  
-            unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
-            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG $COMBINED_IG_PARAMETERS
-          done
