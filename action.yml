@@ -35,7 +35,7 @@ runs:
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
-        CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v)
+        CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
         echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
       shell: bash
           
@@ -58,7 +58,7 @@ runs:
     - name: FHIR Dependency restore
       run: |
         FHIR_RESTORE=$(fhir restore)
-        echo "Restore of package.json was successfull: $FHIR_RESTORE"
+        echo "Restore of package.json was successful: $FHIR_RESTORE"
       shell: bash
     
     # Validate all conformance resources on the stack
@@ -88,15 +88,15 @@ runs:
     
     - name: Download Java Validator
       run: | 
-        wget https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
+        wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
       shell: bash
       env:
        JAVA_VALIDATOR_VERSION: 5.3.8
       
     - name: Install jq
       run: | 
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates
+        sudo apt-get update > /dev/null
+        sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
       shell: bash
         
     - name: Get IG Parameter
