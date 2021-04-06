@@ -4,6 +4,14 @@
 name: Firely.Terminal (GitHub Actions)
 description: Run Firely.Terminal and the offical FHIR Java Validator in a GitHub Actions pipeline
 
+inputs:
+  PATH_TO_CONFORMANCE_RESOURCES:
+    description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem)'
+    required: true
+  PATH_TO_EXAMPLES:
+    description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
+    required: false
+
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
@@ -23,8 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FIRELY_TERMINAL_VERSION: 2.0.0
-      PATH_TO_CONFORMANCE_RESOURCES: terminologie/CodeSystem ressourcen-profile logical-models
-      PATH_TO_EXAMPLES: beispiele #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
       
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -56,7 +62,7 @@ jobs:
       # Examples need to go last otherwise we can't find the profiles used in the examples anymore on the stack when validating (the stack is FIFO)
       - name: Add resources to the Firely Terminal stack
         run: |
-          for p in $PATH_TO_CONFORMANCE_RESOURCES; 
+          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do 
             echo Accessing "$p" and pushing resources to the stack...
             if [ -d "$GITHUB_WORKSPACE/$p" ]; then
@@ -72,7 +78,7 @@ jobs:
         run: |
           fhir restore
     
-      # Validate all resources on the stack
+      # Validate all conformance resources on the stack
       - name: Validate all conformance resources in scope of the repository
         run: | 
           while true; do
@@ -91,6 +97,8 @@ jobs:
             
             fhir pop > /dev/null
           done
+      
+     #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
           
   # Addionally validate all resources using the Java validator
   Validation_Java_Validator:
@@ -98,8 +106,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       JAVA_VALIDATOR_VERSION: 5.3.8
-      PATH_TO_CONFORMANCE_RESOURCES: terminologie/CodeSystem ressourcen-profile logical-models
-      PATH_TO_EXAMPLES: beispiele
       FHIR_VERSION: "4.0"
     
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -124,7 +130,7 @@ jobs:
 
       - name: Validate all conformance resources in scope of the repository
         run: |
-          for p in $PATH_TO_CONFORMANCE_RESOURCES; 
+          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do  
             unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
             java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG
@@ -133,7 +139,7 @@ jobs:
       - name: Validate all example resources in scope of the repository
         continue-on-error: true
         run: |          
-          for p in $PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
+          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
           do  
             COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
           done
