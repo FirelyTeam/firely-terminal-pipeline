@@ -90,17 +90,17 @@ runs:
       run: | 
         wget https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
       shell: bash
-    
-    - name: Setup Java JDK
-      uses: actions/setup-java@v1.4.3
-      with:
-        java-version: 1.8
+      
+    - name: Install jq
+      run: | 
+        apt-get update > 
+        apt-get install --no-install-recommends -y jq findutils curl ca-certificates
+      shell: bash
         
     - name: Get IG Parameter
-      uses: sergeysova/jq-action@v2
-      id: ig
-      with:
-        cmd: jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json
+      run: |
+        IG=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+      shell: bash
           
     - name: Validate all conformance resources in scope of the repository
       run: |
