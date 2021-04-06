@@ -25,6 +25,8 @@ runs:
       run: |
         dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION
       shell: bash
+      env:
+       FIRELY_TERMINAL_VERSION: 2.0.0
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
