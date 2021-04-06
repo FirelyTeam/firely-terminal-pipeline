@@ -112,7 +112,6 @@ runs:
       shell: bash
         
     - name: Validate all example resources in scope of the repository
-      continue-on-error: true
       run: |          
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
         do  
@@ -124,3 +123,4 @@ runs:
           unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
           java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG $COMBINED_IG_PARAMETERS
         done
+      shell: bash
