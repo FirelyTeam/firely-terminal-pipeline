@@ -93,6 +93,7 @@ runs:
     - name: Success (Firely.Terminal)
       run: |
         echo "Finished validation with Firely.Terminal"
+      shell: bash
     
     # Offical HL7 Java validator steps
     
