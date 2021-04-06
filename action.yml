@@ -95,8 +95,8 @@ runs:
       
     - name: Install jq
       run: | 
-        apt-get update
-        apt-get install --no-install-recommends -y jq findutils curl ca-certificates
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates
       shell: bash
         
     - name: Get IG Parameter
