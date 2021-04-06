@@ -112,15 +112,15 @@ runs:
         
     - name: Get IG Parameter
       run: |
-        IG=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+        IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
       shell: bash
           
     - name: Validate all conformance resources in scope of the repository
       run: |
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
         do  
-          unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
-          java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG
+          UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
+          java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
         done
       shell: bash
       env:
