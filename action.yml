@@ -54,6 +54,8 @@ runs:
           fi
         done
       shell: bash
+      env:
+        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
       
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
@@ -86,6 +88,11 @@ runs:
       shell: bash
       
      #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
+     
+         # Validate all conformance resources on the stack
+    - name: Success (Firely.Terminal)
+      run: |
+        echo "Finished validation with Firely.Terminal"
     
     # Offical HL7 Java validator steps
     
