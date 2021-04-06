@@ -87,40 +87,40 @@ runs:
     # Offical HL7 Java validator steps
     
     - name: Download Java Validator
-        run: | 
-          wget https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
-        shell: bash
+      run: | 
+        wget https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
+      shell: bash
     
     - name: Setup Java JDK
-        uses: actions/setup-java@v1.4.3
-        with:
-          java-version: 1.8
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 1.8
         
     - name: Get IG Parameter
-        uses: sergeysova/jq-action@v2
-        id: ig
-        with:
-          cmd: jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json
+      uses: sergeysova/jq-action@v2
+      id: ig
+      with:
+        cmd: jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json
           
     - name: Validate all conformance resources in scope of the repository
-        run: |
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
-          do  
-            unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
-            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG
-          done
-        shell: bash
+      run: |
+        for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
+        do  
+          unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
+          java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG
+        done
+      shell: bash
         
     - name: Validate all example resources in scope of the repository
-        continue-on-error: true
-        run: |          
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
-          do  
-            COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
-          done
+      continue-on-error: true
+      run: |          
+        for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
+        do  
+          COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
+        done
           
-          for p in $PATH_TO_EXAMPLES; 
-          do  
-            unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
-            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG $COMBINED_IG_PARAMETERS
-          done
+        for p in $PATH_TO_EXAMPLES; 
+        do  
+          unescapedIG=$(echo ${{ steps.ig.outputs.value }} | tr -d '"')
+          java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG $COMBINED_IG_PARAMETERS
+        done
