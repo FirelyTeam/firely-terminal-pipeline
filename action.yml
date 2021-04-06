@@ -109,14 +109,10 @@ runs:
         sudo apt-get update > /dev/null
         sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
       shell: bash
-        
-    - name: Get IG Parameter
-      run: |
-        IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
-      shell: bash
           
     - name: Validate all conformance resources in scope of the repository
       run: |
+        IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
         do  
           UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
