@@ -1,7 +1,8 @@
 
 # Run Firely.Terminal and the offical FHIR Java Validator in a GH Action pipeline
 
-name: Firely.Terminal
+name: Firely.Terminal (GitHub Actions)
+description: Run Firely.Terminal and the offical FHIR Java Validator in a GitHub Actions pipeline
 
 # Controls when the action will run. 
 on:
