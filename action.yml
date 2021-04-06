@@ -18,7 +18,7 @@ runs:
     - name: Check .NET SDK Version
       run: |
         CHECK_DOTNET_VERSION=$(dotnet --version)
-        echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
+        echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION \n\n"
       shell: bash
           
     # Install Firely.Terminal
@@ -34,7 +34,7 @@ runs:
     - name: Check Firely Terminal Version
       run: |
         CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v)
-        echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
+        echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION \n\n"
       shell: bash
           
     # Add conformance resources for validation to the stack
@@ -55,7 +55,8 @@ runs:
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
       run: |
-        fhir restore
+        FHIR_RESTORE=$(fhir restore)
+        echo "Restore of package.json was successfull: $FHIR_RESTORE \n\n"
       shell: bash
     
     # Validate all conformance resources on the stack
