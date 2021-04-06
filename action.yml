@@ -17,13 +17,15 @@ runs:
     # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
-        dotnet --version
+        CHECK_DOTNET_VERSION=$(dotnet --version)
+        echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
       shell: bash
           
     # Install Firely.Terminal
     - name: Install Firely.Terminal
       run: |
-        dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION
+        dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
+        echo "Successfully installed Firely.Terminal"
       shell: bash
       env:
        FIRELY_TERMINAL_VERSION: 2.0.0
@@ -31,7 +33,8 @@ runs:
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
-        fhir -v
+        CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v)
+        echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
       shell: bash
           
     # Add conformance resources for validation to the stack
@@ -64,7 +67,7 @@ runs:
             echo "Validation was executed for all resources on the stack"
             break
           fi
-          echo Validating $currentResource ...
+          echo "Validating $currentResource ..."
             
           result=$(fhir validate)
           echo $result
