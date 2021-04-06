@@ -13,22 +13,24 @@ inputs:
 runs:
   using: "composite"
   steps:
-    shell: bash
     
     # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
         dotnet --version
+      shell: bash
           
     # Install Firely.Terminal
     - name: Install Firely.Terminal
       run: |
         dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION
+      shell: bash
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
         fhir -v
+      shell: bash
           
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
@@ -43,11 +45,13 @@ runs:
             echo Cannot access "$p" as the path does not exist
           fi
         done
+      shell: bash
       
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
       run: |
         fhir restore
+      shell: bash
     
     # Validate all conformance resources on the stack
     - name: Validate all conformance resources in scope of the repository
@@ -68,5 +72,6 @@ runs:
             
           fhir pop > /dev/null
         done
+      shell: bash
       
      #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
