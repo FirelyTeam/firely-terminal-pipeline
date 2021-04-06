@@ -42,6 +42,7 @@ runs:
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
       run: |
+        echo "Trying to validate conformance resources located at the following relative path(s): $PATH_TO_CONFORMANCE_RESOURCES"
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
         do 
           echo Accessing "$p" and pushing resources to the stack...
@@ -57,7 +58,7 @@ runs:
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
       run: |
-        FHIR_RESTORE=$(fhir restore)
+        FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
         echo "Restore of package.json was successful: $FHIR_RESTORE"
       shell: bash
     
