@@ -69,7 +69,7 @@ runs:
         while true; do
           currentResource=$(fhir peek)
           if [[ "$currentResource" == *"The stack is empty."* ]]; then
-            echo "Validation was executed for all conformance resources on the stack. Validate $count conformance resource(s)."
+            echo "Validation was executed for all conformance resources on the stack. Validated $count conformance resource(s)."
             break
           fi
           ((count=count+1))
