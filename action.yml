@@ -90,6 +90,8 @@ runs:
       run: | 
         wget https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
       shell: bash
+      env:
+       JAVA_VALIDATOR_VERSION: 5.3.8
       
     - name: Install jq
       run: | 
@@ -110,6 +112,9 @@ runs:
           java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG
         done
       shell: bash
+      env:
+       PATH_TO_CONFORMANCE_RESOURCES: terminologie/CodeSystem ressourcen-profile logical-models
+       FHIR_VERSION: "4.0"
         
     - name: Validate all example resources in scope of the repository
       run: |          
@@ -124,3 +129,7 @@ runs:
           java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $unescapedIG $COMBINED_IG_PARAMETERS
         done
       shell: bash
+      env:
+       PATH_TO_CONFORMANCE_RESOURCES: terminologie/CodeSystem ressourcen-profile logical-models
+       PATH_TO_EXAMPLES: beispiele
+       FHIR_VERSION: "4.0"
