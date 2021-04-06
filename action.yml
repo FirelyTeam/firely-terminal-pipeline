@@ -42,7 +42,7 @@ runs:
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
       run: |
-        echo "Trying to validate conformance resources located at the following relative path(s): $PATH_TO_CONFORMANCE_RESOURCES"
+        echo "Trying to validate conformance resources located at the following relative path(s): $INPUT_PATH_TO_CONFORMANCE_RESOURCES"
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
         do 
           echo Accessing "$p" and pushing resources to the stack...
@@ -124,8 +124,8 @@ runs:
         done
       shell: bash
       env:
-       PATH_TO_CONFORMANCE_RESOURCES: terminologie/CodeSystem ressourcen-profile logical-models
        FHIR_VERSION: "4.0"
+       INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
         
     - name: Validate all example resources in scope of the repository
       run: |          
@@ -141,6 +141,6 @@ runs:
         done
       shell: bash
       env:
-       PATH_TO_CONFORMANCE_RESOURCES: terminologie/CodeSystem ressourcen-profile logical-models
+       INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        PATH_TO_EXAMPLES: beispiele
        FHIR_VERSION: "4.0"
