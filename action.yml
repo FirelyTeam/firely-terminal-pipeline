@@ -12,25 +12,25 @@ inputs:
 # Validate all resources using Firely Terminal 
 runs:
   using: "composite"
-  shell: bash
   steps:
-    # Test SDK version
+    shell: bash
+    
+    # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
         dotnet --version
           
-    # Install Firely Terminal
-    - name: Install Firely Terminal
+    # Install Firely.Terminal
+    - name: Install Firely.Terminal
       run: |
         dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION
       
-    # Test Firely Terminal install
+    # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
         fhir -v
           
-    # Add resources for validation to the stack
-    # Examples need to go last otherwise we can't find the profiles used in the examples anymore on the stack when validating (the stack is FIFO)
+    # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
       run: |
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
