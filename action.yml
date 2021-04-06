@@ -95,7 +95,7 @@ runs:
       
     - name: Install jq
       run: | 
-        apt-get update > 
+        apt-get update
         apt-get install --no-install-recommends -y jq findutils curl ca-certificates
       shell: bash
         
