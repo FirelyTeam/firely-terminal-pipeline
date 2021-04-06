@@ -64,11 +64,13 @@ runs:
     
     # Validate all conformance resources on the stack
     - name: Validate all conformance resources in scope of the repository
-      run: | 
+      run: |
+        count=0
         while true; do
           currentResource=$(fhir peek)
+          ((count=count+1))
           if [[ "$currentResource" == *"The stack is empty."* ]]; then
-            echo "Validation was executed for all resources on the stack"
+            echo "Validation was executed for all conformance resources on the stack. Validate $count conformance resources."
             break
           fi
           echo "Validating $currentResource ..."
