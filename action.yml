@@ -27,6 +27,7 @@ runs:
     # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
+        echo $INPUT_DOTNET_VALIDATION_ENABLED
         if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
           CHECK_DOTNET_VERSION=$(dotnet --version)
           echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
