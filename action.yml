@@ -26,45 +26,54 @@ runs:
     
     # Test Firely SDK version
     - name: Check .NET SDK Version
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
-        CHECK_DOTNET_VERSION=$(dotnet --version)
-        echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
+        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+          CHECK_DOTNET_VERSION=$(dotnet --version)
+          echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
+        fi
       shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
           
     # Install Firely.Terminal
     - name: Install Firely.Terminal
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
-        dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
-        echo "Successfully installed Firely.Terminal"
+        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+          dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
+          echo "Successfully installed Firely.Terminal"
+        fi
       shell: bash
       env:
        FIRELY_TERMINAL_VERSION: 2.0.0
+       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
-        CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
-        echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
+        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+         CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
+          echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
+        fi
       shell: bash
+      env:
+       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
           
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
-        echo "Trying to validate conformance resources located at the following relative path(s): $INPUT_PATH_TO_CONFORMANCE_RESOURCES"
-        for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
-        do 
-          echo Accessing "$p" and pushing resources to the stack...
-          if [ -d "$GITHUB_WORKSPACE/$p" ]; then
-            cd $GITHUB_WORKSPACE/$p
-            fhir push .
-          else
-            echo Cannot access "$p" as the path does not exist
-          fi
-        done
+        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+          echo "Trying to validate conformance resources located at the following relative path(s): $INPUT_PATH_TO_CONFORMANCE_RESOURCES"
+          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
+          do 
+           echo Accessing "$p" and pushing resources to the stack...
+            if [ -d "$GITHUB_WORKSPACE/$p" ]; then
+             cd $GITHUB_WORKSPACE/$p
+              fhir push .
+            else
+              echo Cannot access "$p" as the path does not exist
+            fi
+          done
+        fi
       shell: bash
       env:
         INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
@@ -73,37 +82,43 @@ runs:
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
       run: |
-        FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
-        echo "Restore of package.json was successful: $FHIR_RESTORE"
+        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+          FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
+          echo "Restore of package.json was successful: $FHIR_RESTORE"
+        fi
       shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
     
     # Validate all conformance resources on the stack
     - name: Validate all conformance resources in scope of the repository
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
-        count=0
-        while true; do
-          currentResource=$(fhir peek)
-          if [[ "$currentResource" == *"The stack is empty."* ]]; then
-            echo "Validation was executed for all conformance resources on the stack. Validated $count conformance resource(s)."
-            break
-          fi
-          ((count=count+1))
-          echo "Validating $currentResource ..."
+        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then     
+          count=0
+          while true; do
+            currentResource=$(fhir peek)
+            if [[ "$currentResource" == *"The stack is empty."* ]]; then
+              echo "Validation was executed for all conformance resources on the stack. Validated $count conformance resource(s)."
+              break
+            fi
+            ((count=count+1))
+            echo "Validating $currentResource ..."
             
-          result=$(fhir validate)
-          echo $result
-          if [[ "$result" == *"INVALID"* ]]; then
-            exit 1
-          fi
+            result=$(fhir validate)
+            echo $result
+            if [[ "$result" == *"INVALID"* ]]; then
+              exit 1
+            fi
             
-          fhir pop > /dev/null
-        done
+            fhir pop > /dev/null
+          done
+        fi
       shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       
      #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
      
-         # Validate all conformance resources on the stack
     - name: Success (Firely.Terminal)
       if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
@@ -113,7 +128,6 @@ runs:
     # Offical HL7 Java validator steps
     
     - name: Download Java Validator
-      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: | 
         wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
       shell: bash
@@ -121,7 +135,6 @@ runs:
        JAVA_VALIDATOR_VERSION: 5.3.8
       
     - name: Install jq
-      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: | 
         sudo apt-get update > /dev/null
         sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
@@ -142,7 +155,6 @@ runs:
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
         
     - name: Validate all example resources in scope of the repository
-      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: |
         IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
