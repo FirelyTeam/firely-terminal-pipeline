@@ -120,7 +120,6 @@ runs:
      #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
      
     - name: Success (Firely.Terminal)
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
         echo "Finished validation with Firely.Terminal"
       shell: bash
@@ -141,7 +140,6 @@ runs:
       shell: bash
           
     - name: Validate all conformance resources in scope of the repository
-      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: |
         IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
