@@ -27,8 +27,7 @@ runs:
     # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
-        echo $INPUT_DOTNET_VALIDATION_ENABLED
-        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
           CHECK_DOTNET_VERSION=$(dotnet --version)
           echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
         fi
@@ -39,7 +38,7 @@ runs:
     # Install Firely.Terminal
     - name: Install Firely.Terminal
       run: |
-        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
           dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
           echo "Successfully installed Firely.Terminal"
         fi
@@ -51,7 +50,7 @@ runs:
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
-        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
          CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
           echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
         fi
@@ -62,7 +61,7 @@ runs:
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
       run: |
-        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
           echo "Trying to validate conformance resources located at the following relative path(s): $INPUT_PATH_TO_CONFORMANCE_RESOURCES"
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do 
@@ -83,7 +82,7 @@ runs:
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
       run: |
-        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
           FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
@@ -94,7 +93,7 @@ runs:
     # Validate all conformance resources on the stack
     - name: Validate all conformance resources in scope of the repository
       run: |
-        if [ $INPUT_DOTNET_VALIDATION_ENABLED ]; then     
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then     
           count=0
           while true; do
             currentResource=$(fhir peek)
@@ -122,8 +121,12 @@ runs:
      
     - name: Success (Firely.Terminal)
       run: |
-        echo "Finished validation with Firely.Terminal"
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then 
+          echo "Finished validation with Firely.Terminal"
+        fi
       shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
     
     # Offical HL7 Java validator steps
     
