@@ -184,6 +184,6 @@ runs:
       shell: bash
       env:
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
-       PATH_TO_EXAMPLES: beispiele
+       PATH_TO_EXAMPLES: ${{ inputs.PATH_TO_EXAMPLES }}
        FHIR_VERSION: "4.0"
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
