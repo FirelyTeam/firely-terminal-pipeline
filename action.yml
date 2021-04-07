@@ -131,46 +131,59 @@ runs:
     # Offical HL7 Java validator steps
     
     - name: Download Java Validator
-      run: | 
-        wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
+      run: |
+        if $INPUT_JAVA_VALIDATION_ENABLED; then 
+          wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
+        fi
       shell: bash
       env:
        JAVA_VALIDATOR_VERSION: 5.3.8
+       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       
     - name: Install jq
-      run: | 
-        sudo apt-get update > /dev/null
-        sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
+      run: |
+        if $INPUT_JAVA_VALIDATION_ENABLED; then 
+          sudo apt-get update > /dev/null
+          sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
+        fi
       shell: bash
+      env:
+       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
           
     - name: Validate all conformance resources in scope of the repository
       run: |
-        IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
-        for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
-        do  
-          UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
-          java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
-        done
+        if $INPUT_JAVA_VALIDATION_ENABLED; then 
+          IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
+          do  
+            UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
+            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
+          done
+        fi
       shell: bash
       env:
        FHIR_VERSION: "4.0"
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
+       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
         
     - name: Validate all example resources in scope of the repository
       run: |
-        IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
-        for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
-        do  
-          COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
-        done
+        if $INPUT_JAVA_VALIDATION_ENABLED; then 
+          IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
+          do  
+            COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
+          done
           
-        for p in $PATH_TO_EXAMPLES; 
-        do  
-          UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
-          java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS
-        done
+          for p in $PATH_TO_EXAMPLES; 
+          do  
+            UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
+            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS
+          done
+        fi
       shell: bash
       env:
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        PATH_TO_EXAMPLES: beispiele
        FHIR_VERSION: "4.0"
+       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
