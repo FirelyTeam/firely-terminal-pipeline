@@ -8,6 +8,14 @@ inputs:
   PATH_TO_EXAMPLES:
     description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
     required: false
+  DOTNET_VALIDATION_ENABLED:
+    description: 'Boolean flag to run the .NET validator to validate conformance resources and examples'
+    required: false
+    default: true
+  JAVA_VALIDATION_ENABLED:
+    description: 'Boolean flag to run the offical HL7 Java validator to validate conformance resources and examples'
+    required: false
+    default: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -18,6 +26,7 @@ runs:
     
     # Test Firely SDK version
     - name: Check .NET SDK Version
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
         CHECK_DOTNET_VERSION=$(dotnet --version)
         echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
@@ -25,6 +34,7 @@ runs:
           
     # Install Firely.Terminal
     - name: Install Firely.Terminal
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
         dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
         echo "Successfully installed Firely.Terminal"
@@ -34,6 +44,7 @@ runs:
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
         CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
         echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
@@ -41,6 +52,7 @@ runs:
           
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
         echo "Trying to validate conformance resources located at the following relative path(s): $INPUT_PATH_TO_CONFORMANCE_RESOURCES"
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
@@ -56,6 +68,7 @@ runs:
       shell: bash
       env:
         INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
@@ -66,6 +79,7 @@ runs:
     
     # Validate all conformance resources on the stack
     - name: Validate all conformance resources in scope of the repository
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
         count=0
         while true; do
@@ -91,6 +105,7 @@ runs:
      
          # Validate all conformance resources on the stack
     - name: Success (Firely.Terminal)
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       run: |
         echo "Finished validation with Firely.Terminal"
       shell: bash
@@ -98,6 +113,7 @@ runs:
     # Offical HL7 Java validator steps
     
     - name: Download Java Validator
+      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: | 
         wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
       shell: bash
@@ -105,12 +121,14 @@ runs:
        JAVA_VALIDATOR_VERSION: 5.3.8
       
     - name: Install jq
+      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: | 
         sudo apt-get update > /dev/null
         sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
       shell: bash
           
     - name: Validate all conformance resources in scope of the repository
+      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: |
         IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
@@ -124,6 +142,7 @@ runs:
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
         
     - name: Validate all example resources in scope of the repository
+      if: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       run: |
         IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
         for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
