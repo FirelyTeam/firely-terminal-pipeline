@@ -109,8 +109,13 @@ runs:
             
             result=$(fhir validate)
             echo $result
-            if echo $result | grep -Eq "*"INVALID"*" && echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
-              exit 1
+            if echo $result | grep -Eq "*"INVALID"*" then
+              echo "INVALID matched"
+            fi
+            
+            echo $INPUT_EXPECTED_FAILS
+            if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
+              echo VALIDATION_CONFORMANCE_DOTNET
             fi
             
             fhir pop > /dev/null
