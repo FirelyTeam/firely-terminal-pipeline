@@ -11,3 +11,26 @@ You can add a badge to your repository with the current pipeline status:
 * Select the Firely Validation pipeline
 * Select the three dots and click 'Create status badge'
 * Paste this code in the beginning of your `README.md` file.
+
+## Options
+
+You can specify the following options using the ["with" syntax](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswith) in your GitHub Actions yml configuration:
+
+* PATH_TO_CONFORMANCE_RESOURCES:
+    - description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem)'
+    - required: true
+* PATH_TO_EXAMPLES:
+    - description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
+    - required: false
+* DOTNET_VALIDATION_ENABLED:
+    - description: 'Boolean flag to run the .NET validator to validate conformance resources and examples'
+    - required: false
+    - default: true
+* JAVA_VALIDATION_ENABLED:
+    - description: 'Boolean flag to run the offical HL7 Java validator to validate conformance resources and examples'
+    - required: false
+    - default: false
+* EXPECTED_FAILS:
+    -  description: Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_EXAMPLES_JAVA', 'VALIDATION_EXAMPLES_DOTNET'
+    -  required: false
+    
