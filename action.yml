@@ -161,7 +161,13 @@ runs:
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do  
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
-            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
+            
+            if echo $INPUT_EXPECTED_FAILS | grep -w -q -v VALIDATION_CONFORMANCE_JAVA; then
+              ! java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
+            else
+              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
+            fi
+          
           done
         fi
       shell: bash
@@ -169,6 +175,7 @@ runs:
        FHIR_VERSION: "4.0"
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+       INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
         
     - name: Validate all example resources in scope of the repository
       run: |
