@@ -163,7 +163,6 @@ runs:
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              echo "VALIDATION_CONFORMANCE_JAVA"
               java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES || true
             else
               java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
@@ -190,7 +189,13 @@ runs:
           for p in $PATH_TO_EXAMPLES; 
           do  
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
-            java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS
+            
+            if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_EXAMPLES_JAVA; then
+              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true
+            else
+              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS
+            fi
+            
           done
         fi
       shell: bash
@@ -199,3 +204,4 @@ runs:
        PATH_TO_EXAMPLES: ${{ inputs.PATH_TO_EXAMPLES }}
        FHIR_VERSION: "4.0"
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+       INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
