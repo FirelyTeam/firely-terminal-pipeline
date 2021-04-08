@@ -162,7 +162,7 @@ runs:
           do  
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
-            if echo $INPUT_EXPECTED_FAILS | grep -w -q -v VALIDATION_CONFORMANCE_JAVA; then
+            if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
               echo "VALIDATION_CONFORMANCE_JAVA"
               java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES || true
             else
