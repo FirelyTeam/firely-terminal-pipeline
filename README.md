@@ -1,5 +1,6 @@
 # firely-terminal-pipeline
-Run Firely Terminal, and optionally the Java Validator too, as GitHub Actions on your FHIR GitHub repository.
+Run [Firely Terminal](https://fire.ly/products/firely-terminal/), and optionally the Java Validator too, as GitHub Actions on your FHIR GitHub repository. Validate conformance resource and examples against the FHIR specification and [your custom business rules](https://fire.ly/2021/03/04/quality-control-how-to-validate-full-fhir-specifications-in-one-click/) on every commit and pull request.
+<img align="right" width="40%" src="illustration_firely_terminal.png">
 
 Example setup can be found on [this project](https://github.com/FirelyTeam/ACMEGitHubExample):
 * Copy the contents of or download [this example `main.yml` setup file](https://github.com/FirelyTeam/ACMEGitHubExample/blob/main/.github/workflows/main.yml).
