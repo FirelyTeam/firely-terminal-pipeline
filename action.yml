@@ -17,7 +17,7 @@ inputs:
     required: false
     default: false
   EXPECTED_FAILS:
-    description: 'Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_EXAMPLES_JAVA', 'VALIDATION_EXAMPLES_DOTNET''
+    description: 'Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: VALIDATION_CONFORMANCE_JAVA, VALIDATION_CONFORMANCE_DOTNET, VALIDATION_EXAMPLES_JAVA, VALIDATION_EXAMPLES_DOTNET'
     required: false
 
 # Validate all resources using Firely Terminal 
