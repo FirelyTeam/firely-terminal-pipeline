@@ -109,7 +109,7 @@ runs:
             
             result=$(fhir validate)
             echo $result
-            if [[ "$result" == *"INVALID"* ]] && [[ echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET ]]; then
+            if echo $result | grep -Eq "*"INVALID"*" && echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
               exit 1
             fi
             
