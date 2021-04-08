@@ -16,6 +16,9 @@ inputs:
     description: 'Boolean flag to run the offical HL7 Java validator to validate conformance resources and examples'
     required: false
     default: false
+  EXPECTED_FAILS:
+    description: Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_EXAMPLES_JAVA', 'VALIDATION_EXAMPLES_DOTNET'
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -106,7 +109,7 @@ runs:
             
             result=$(fhir validate)
             echo $result
-            if [[ "$result" == *"INVALID"* ]]; then
+            if [[ "$result" == *"INVALID"* ]] && [ echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET ]; then
               exit 1
             fi
             
@@ -116,6 +119,7 @@ runs:
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
       
      #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
      
