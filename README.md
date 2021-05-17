@@ -36,6 +36,16 @@ You can specify the following options using the ["with" syntax](https://docs.git
     -  required: false
 * OUTPUT_FORMAT:
     - description: Specify the format of the validation output: Allowed values: 'RAW', 'SUMMARY' (produces a markdown compatible overview of all validation issues)
+
+## Changelog
+
+### v0.1.0-beta2 - 2021-04-22
+- Feature: Upgrade Java validator to version 5.3.11
+
+### v0.1.0-beta1 - 2021-04-14
+- Feature: Upgrade Java validator to version 5.3.9
+
+### Intital Release - 2021-04-08
     
 ## Known Issues
 - PATH_TO_EXAMPLES is currently not supported in combination with DOTNET_VALIDATION_ENABLED. The .NET part will currently ignore examples.
