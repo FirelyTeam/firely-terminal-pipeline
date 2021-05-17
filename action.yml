@@ -19,6 +19,9 @@ inputs:
   EXPECTED_FAILS:
     description: 'Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: VALIDATION_CONFORMANCE_JAVA, VALIDATION_CONFORMANCE_DOTNET, VALIDATION_EXAMPLES_JAVA, VALIDATION_EXAMPLES_DOTNET'
     required: false
+  OUTPUT_FORMAT:
+    description: 'Specify the format of the validation output: Allowed values: RAW, SUMMARY (produces a markdown compatible overview of all validation issues)'
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -163,9 +166,42 @@ runs:
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES || true
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES || true)
             else
-              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES)
+            fi
+            
+            if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
+              echo "$javaValidatorOutput"
+            else
+              SAVEIFS=$IFS 
+              IFS=$'\n'
+
+              pathToValidatedResource=($(echo "$javaValidatorOutput" | ggrep -P '\-\-\s' | ggrep -oP '(?<=--\s).+(?=\s--)'))
+              resourceBoundaries=($(echo "$javaValidatorOutput" | ggrep -b -oP '(?<!-)-{2}\s' | cut -d: -f1))
+              for i in "${!resourceBoundaries[@]}"; do
+                echo "----"
+                echo "Path to valiated resource: ${pathToValidatedResource[$i]}"
+                echo "----"
+                if [[ ! -z "${resourceBoundaries[$i+1]:-}" ]]; then
+                  offsetDiff=$(expr ${resourceBoundaries[$i+1]} - ${resourceBoundaries[$i]})
+                  resourceOutput=$(echo "$javaValidatorOutput" | tail -c+${resourceBoundaries[$i]} | head -c+${offsetDiff})
+                else
+                  resourceOutput=$(echo "$javaValidatorOutput" | tail -c+${resourceBoundaries[$i]})
+                fi
+
+                levels=($(echo "$resourceOutput" | ggrep -P '(Error|Warning|Information)'| ggrep -oP '(?<=\s)[^\s]+(?=\s@)'))
+                locations=($(echo "$resourceOutput" | ggrep -oP '(?<=@\s)[^:]*(?=\s)'))
+                messages=($(echo "$resourceOutput" | ggrep -oP '(?<=\s:\s).*'))
+                for i in "${!levels[@]}"; do
+                  echo "Level: ${levels[$i]}"
+                  echo "Location: ${locations[$i]}"
+                  echo "Message: ${messages[$i]}"
+                  echo -e ""
+                done
+
+              done
+              IFS=$SAVEIFS
             fi
           
           done
@@ -176,6 +212,7 @@ runs:
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
+       INPUT_OUTPUT_FORMAT: ${{ inputs.OUTPUT_FORMAT }}
         
     - name: Validate all example resources in scope of the repository
       run: |
