@@ -34,6 +34,7 @@ runs:
     - name: Check .NET SDK Version
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          echo "Starting validation using .NET ..."
           CHECK_DOTNET_VERSION=$(dotnet --version)
           echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
         fi
@@ -139,8 +140,12 @@ runs:
     
     - name: Download Java Validator
       run: |
-        if $INPUT_JAVA_VALIDATION_ENABLED; then 
+        if $INPUT_JAVA_VALIDATION_ENABLED; then
+          echo "Starting validation using Java ..."
+          CHECK_JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2)
+          echo "JAVA_VERSION: $CHECK_JAVA_VERSION"
           wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
+          echo "JAVA_VALIDATOR_VERSION: $CHECK_JAVA_VERSION"
         fi
       shell: bash
       env:
@@ -176,31 +181,7 @@ runs:
             else
               SAVEIFS=$IFS 
               IFS=$'\n'
-
-              pathToValidatedResource=($(echo "$javaValidatorOutput" | grep -P '\-\-\s' | grep -oP '(?<=--\s).+(?=\s--)'))
-              resourceBoundaries=($(echo "$javaValidatorOutput" | grep -b -oP '(?<!-)-{2}\s' | cut -d: -f1))
-              for i in "${!resourceBoundaries[@]}"; do
-                echo "----"
-                echo "Path to valiated resource: ${pathToValidatedResource[$i]}"
-                echo "----"
-                if [[ ! -z "${resourceBoundaries[$i+1]:-}" ]]; then
-                  offsetDiff=$(expr ${resourceBoundaries[$i+1]} - ${resourceBoundaries[$i]})
-                  resourceOutput=$(echo "$javaValidatorOutput" | tail -c+${resourceBoundaries[$i]} | head -c+${offsetDiff})
-                else
-                  resourceOutput=$(echo "$javaValidatorOutput" | tail -c+${resourceBoundaries[$i]})
-                fi
-
-                levels=($(echo "$resourceOutput" | grep -P '(Error|Warning|Information)'| grep -oP '(?<=\s)[^\s]+(?=\s@)'))
-                locations=($(echo "$resourceOutput" | grep -oP '(?<=@\s)[^:]*(?=\s)'))
-                messages=($(echo "$resourceOutput" | grep -oP '(?<=\s:\s).*'))
-                for i in "${!levels[@]}"; do
-                  echo "Level: ${levels[$i]}"
-                  echo "Location: ${locations[$i]}"
-                  echo "Message: ${messages[$i]}"
-                  echo -e ""
-                done
-
-              done
+              echo "$javaValidatorOutput" | grep -P '\-\-\s' | grep -oP '(?<=--\s).+(?=\s--)'
               IFS=$SAVEIFS
             fi
           
