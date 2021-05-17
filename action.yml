@@ -145,7 +145,7 @@ runs:
           CHECK_JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2)
           echo "JAVA_VERSION: $CHECK_JAVA_VERSION"
           wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
-          echo "JAVA_VALIDATOR_VERSION: $CHECK_JAVA_VERSION"
+          echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
         fi
       shell: bash
       env:
