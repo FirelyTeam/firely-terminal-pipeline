@@ -175,7 +175,6 @@ runs:
             else
               javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES)
             fi
-            echo "javaValidatorOutput after"
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
               echo "$javaValidatorOutput"
@@ -183,6 +182,7 @@ runs:
               SAVEIFS=$IFS 
               IFS=$'\n'
               echo "Grep pathToValidatedResource start"
+              echo "$javaValidatorOutput"
               echo "$javaValidatorOutput" | grep -P '\-\-\s' | grep -oP '(?<=--\s).+(?=\s--)'
               echo "Grep pathToValidatedResource end"
               IFS=$SAVEIFS
