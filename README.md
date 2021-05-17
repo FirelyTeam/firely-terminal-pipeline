@@ -35,3 +35,6 @@ You can specify the following options using the ["with" syntax](https://docs.git
     -  description: Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_EXAMPLES_JAVA', 'VALIDATION_EXAMPLES_DOTNET'
     -  required: false
     
+## Known Issues
+- PATH_TO_EXAMPLES is currently not supported in combination with DOTNET_VALIDATION_ENABLED. The .NET part will currently ignore examples.
+- All folders in PATH_TO_CONFORMANCE_RESOURCES are currently validated individually in the Java validator. Each folders therefore is validated in it's own context with no access to the other folders
