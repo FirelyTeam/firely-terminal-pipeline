@@ -181,10 +181,17 @@ runs:
             else
               SAVEIFS=$IFS 
               IFS=$'\n'
-              echo "Grep pathToValidatedResource start"
               echo "$javaValidatorOutput"
-              echo "$javaValidatorOutput" | grep -P '\-\-\s' | grep -oP '(?<=--\s).+(?=\s--)'
-              echo "Grep pathToValidatedResource end"
+              pathToValidatedResource=$(echo "$javaValidatorOutput" | grep -P '\-\-\s' || true)
+              pathToValidatedResource=($(echo "$pathToValidatedResource" | grep -oP '(?<=--\s).+(?=\s--)' || true))
+              
+              resourceBoundaries=$(echo "$javaValidatorOutput" | grep -b -oP '(?<!-)-{2}\s' || true)
+              resourceBoundaries=($(echo "$resourceBoundaries" | cut -d: -f1))
+              
+              for i in "${!resourceBoundaries[@]}"; do
+                echo "----"
+              done
+              
               IFS=$SAVEIFS
             fi
           
