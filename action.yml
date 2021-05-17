@@ -103,7 +103,7 @@ runs:
         if $INPUT_DOTNET_VALIDATION_ENABLED; then     
           count=0
           while true; do
-            currentResource=$(fhir peek)
+            currentResource=$(fhir peek || true)
             if [[ "$currentResource" == *"The stack is empty."* ]]; then
               echo "Validation was executed for all conformance resources on the stack. Validated $count conformance resource(s)."
               break
