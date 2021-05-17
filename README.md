@@ -34,6 +34,8 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * EXPECTED_FAILS:
     -  description: Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_EXAMPLES_JAVA', 'VALIDATION_EXAMPLES_DOTNET'
     -  required: false
+* OUTPUT_FORMAT:
+    - description: Specify the format of the validation output: Allowed values: 'RAW', 'SUMMARY' (produces a markdown compatible overview of all validation issues)
     
 ## Known Issues
 - PATH_TO_EXAMPLES is currently not supported in combination with DOTNET_VALIDATION_ENABLED. The .NET part will currently ignore examples.
