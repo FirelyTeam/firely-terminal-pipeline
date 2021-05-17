@@ -170,12 +170,9 @@ runs:
           do  
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
-            echo "javaValidatorOutput before"
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              echo "javaValidatorOutput with expected fail"
               javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES || true)
             else
-              echo "javaValidatorOutput without expected fail"
               javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES)
             fi
             echo "javaValidatorOutput after"
@@ -185,7 +182,9 @@ runs:
             else
               SAVEIFS=$IFS 
               IFS=$'\n'
+              echo "Grep pathToValidatedResource start"
               echo "$javaValidatorOutput" | grep -P '\-\-\s' | grep -oP '(?<=--\s).+(?=\s--)'
+              echo "Grep pathToValidatedResource end"
               IFS=$SAVEIFS
             fi
           
