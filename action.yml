@@ -170,11 +170,15 @@ runs:
           do  
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
+            echo "javaValidatorOutput before"
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
+              echo "javaValidatorOutput with expected fail"
               javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES || true)
             else
+              echo "javaValidatorOutput without expected fail"
               javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES)
             fi
+            echo "javaValidatorOutput after"
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
               echo "$javaValidatorOutput"
