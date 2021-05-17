@@ -34,7 +34,6 @@ runs:
     - name: Check .NET SDK Version
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
-          echo "Starting validation using .NET ..."
           CHECK_DOTNET_VERSION=$(dotnet --version)
           echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
         fi
@@ -69,6 +68,7 @@ runs:
     - name: Add resources to the Firely Terminal stack
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          echo "Starting validation using .NET validator (Conformance resources) ..."
           echo "Trying to validate conformance resources located at the following relative path(s): $INPUT_PATH_TO_CONFORMANCE_RESOURCES"
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do 
@@ -120,28 +120,19 @@ runs:
             fhir pop > /dev/null
           done
         fi
+        echo "Finished validation using .NET validator (Conformance resources) ..."
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
       
-     #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
-     
-    - name: Success (Firely.Terminal)
-      run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then 
-          echo "Finished validation with Firely.Terminal"
-        fi
-      shell: bash
-      env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+    #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
     
     # Offical HL7 Java validator steps
     
     - name: Download Java Validator
       run: |
         if $INPUT_JAVA_VALIDATION_ENABLED; then
-          echo "Starting validation using Java ..."
           CHECK_JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2)
           echo "JAVA_VERSION: $CHECK_JAVA_VERSION"
           wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
@@ -164,7 +155,8 @@ runs:
           
     - name: Validate all conformance resources in scope of the repository
       run: |
-        if $INPUT_JAVA_VALIDATION_ENABLED; then 
+        if $INPUT_JAVA_VALIDATION_ENABLED; then
+          echo "Starting validation using Java validator (Conformance resources) ..."
           IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do  
@@ -216,6 +208,7 @@ runs:
           
           done
         fi
+        echo "Finished validation using Java validator (Conformance resources) ..."
       shell: bash
       env:
        FHIR_VERSION: "4.0"
