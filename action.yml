@@ -156,9 +156,9 @@ runs:
       run: |
       
         print_output_details () {
-          levels=($(echo "$1" | ggrep -P '(Error|Warning|Information)'| ggrep -oP '(?<=\s)[^\s]+(?=\s@)'))
-          locations=($(echo "$1" | ggrep -oP '(?<=@\s)[^:]*(?=\s)'))
-          messages=($(echo "$1" | ggrep -oP '(?<=\s:\s).*'))
+          levels=($(echo "$1" | grep -P '(Error|Warning|Information)'| grep -oP '(?<=\s)[^\s]+(?=\s@)'))
+          locations=($(echo "$1" | grep -oP '(?<=@\s)[^:]*(?=\s)'))
+          messages=($(echo "$1" | grep -oP '(?<=\s:\s).*'))
           for i in "${!levels[@]}"; do
             echo "Level: ${levels[$i]}"
             echo "Location: ${locations[$i]}"
@@ -190,7 +190,7 @@ runs:
               
               if [ ${#pathToValidatedResource[@]} -eq 0 ]; then # Single resource validation only, no section header with resource path will be printed by the Java validator
                 echo "----"
-                pathToValidatedResource=$(echo "$javaValidatorOutput" | ggrep -oP '(?<=Validate\s).+(?=\s[0-9][0-9]:[0-9][0-9].[0-9]{0,})')
+                pathToValidatedResource=$(echo "$javaValidatorOutput" | grep -oP '(?<=Validate\s).+(?=\s[0-9][0-9]:[0-9][0-9].[0-9]{0,})')
                 echo "Path to valiated resource: ${pathToValidatedResource}"
                 echo "----"
                 print_output_details "$javaValidatorOutput"
