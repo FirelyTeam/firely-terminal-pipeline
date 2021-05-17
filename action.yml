@@ -179,7 +179,7 @@ runs:
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do  
-            COMBINED_IG_PARAMETERS=$(echo "$COMBINED_IG_PARAMETERS" | sed -e "s/$p//")
+            COMBINED_IG_PARAMETERS=$(echo "$COMBINED_IG_PARAMETERS" | sed -e "s{"$p"{{") # Don't use / as the delimiter as it might occur in the original string itself as part of the path
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
