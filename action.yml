@@ -198,9 +198,9 @@ runs:
                   resourceOutput=$(echo "$javaValidatorOutput" | tail -c+${resourceBoundaries[$i]})
                 fi
                 
-                levels=($(echo "$resourceOutput" | ggrep -P '(Error|Warning|Information)'| ggrep -oP '(?<=\s)[^\s]+(?=\s@)'))
-                locations=($(echo "$resourceOutput" | ggrep -oP '(?<=@\s)[^:]*(?=\s)'))
-                messages=($(echo "$resourceOutput" | ggrep -oP '(?<=\s:\s).*'))
+                levels=($(echo "$resourceOutput" | grep -P '(Error|Warning|Information)'| grep -oP '(?<=\s)[^\s]+(?=\s@)'))
+                locations=($(echo "$resourceOutput" | grep -oP '(?<=@\s)[^:]*(?=\s)'))
+                messages=($(echo "$resourceOutput" | grep -oP '(?<=\s:\s).*'))
                 
                 for i in "${!levels[@]}"; do
                   echo "Level: ${levels[$i]}"
