@@ -36,6 +36,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
     -  required: false
 * OUTPUT_FORMAT:
     - description: Specify the format of the validation output: Allowed values: 'RAW', 'SUMMARY' (produces a markdown compatible overview of all validation issues)
+    -  required: false
 
 ## Changelog
 
