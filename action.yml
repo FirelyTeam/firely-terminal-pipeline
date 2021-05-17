@@ -50,7 +50,7 @@ runs:
         fi
       shell: bash
       env:
-       FIRELY_TERMINAL_VERSION: 2.0.0
+       FIRELY_TERMINAL_VERSION: 2.1.1
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       
     # Test Firely.Terminal install
