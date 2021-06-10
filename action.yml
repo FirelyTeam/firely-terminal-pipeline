@@ -23,6 +23,9 @@ inputs:
     description: 'Specify the format of the validation output: Allowed values: RAW, SUMMARY (produces a markdown compatible overview of all validation issues)'
     default: 'RAW'
     required: false
+  JAVA_VALIDATION_OPTIONS:
+    description: 'Custom options passed to the Java validator. See https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -183,9 +186,9 @@ runs:
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true)
             else
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS)
             fi
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
@@ -242,6 +245,7 @@ runs:
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
        INPUT_OUTPUT_FORMAT: ${{ inputs.OUTPUT_FORMAT }}
+       INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
         
     - name: Validate all example resources in scope of the repository
       run: |
@@ -257,9 +261,9 @@ runs:
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_EXAMPLES_JAVA; then
-              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true
+              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true
             else
-              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS
+              java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS
             fi
             
           done
@@ -271,3 +275,4 @@ runs:
        FHIR_VERSION: "4.0"
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
+       INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
