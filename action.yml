@@ -79,6 +79,7 @@ runs:
        if $INPUT_DOTNET_VALIDATION_ENABLED; then
         fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
        fi
+      shell: bash
       env:
        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
