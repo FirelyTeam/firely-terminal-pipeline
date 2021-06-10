@@ -26,6 +26,10 @@ inputs:
   JAVA_VALIDATION_OPTIONS:
     description: 'Custom options passed to the Java validator. See https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'
     required: false
+  SIMPLIFIER_USERNAME:
+    description: 'Simplifier username, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
+  SIMPLIFIER_PASSWORD:
+    description: 'Simplifier password, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -66,7 +70,17 @@ runs:
       shell: bash
       env:
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-          
+    
+    # Simplifier Login
+    - name: Simplifier login
+      run: |
+       if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
+       fi
+      env:
+       INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
+       INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
+    
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
       run: |
