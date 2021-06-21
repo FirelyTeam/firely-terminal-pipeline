@@ -89,8 +89,8 @@ runs:
        fi
       shell: bash
       env:
-       INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
-       INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
+       INPUT_SIMPLIFIER_USERNAME: ${{ secrets.SIMPLIFIER_USERNAME }}
+       INPUT_SIMPLIFIER_PASSWORD: ${{ secrets.SIMPLIFIER_PASSWORD }}
        INPUT_DEBUG_MODE: ${{ inputs.DEBUG_MODE }}
     
     # Add conformance resources for validation to the stack
