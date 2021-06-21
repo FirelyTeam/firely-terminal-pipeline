@@ -32,6 +32,10 @@ inputs:
   SIMPLIFIER_PASSWORD:
     description: 'Simplifier password, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
     required: false
+  DEBUG_MODE:
+    description: 'DO NOT USE THIS SETTING IN PRODUCTION! Enables internal logging of environment variables incl. GitHub Secrets'
+    required: false
+    default: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -59,7 +63,7 @@ runs:
         fi
       shell: bash
       env:
-       FIRELY_TERMINAL_VERSION: 2.1.1
+       FIRELY_TERMINAL_VERSION: 2.2.0
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       
     # Test Firely.Terminal install
@@ -77,12 +81,17 @@ runs:
     - name: Simplifier login
       run: |
        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DEBUG_MODE; then
+          echo "SIMPLIFIER_USERNAME: $INPUT_SIMPLIFIER_USERNAME"
+          echo "SIMPLIFIER_PASSWORD: $INPUT_SIMPLIFIER_PASSWORD"
+        fi
         fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
        fi
       shell: bash
       env:
        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
+       INPUT_DEBUG_MODE: ${{ inputs.DEBUG_MODE }}
     
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
