@@ -28,10 +28,10 @@ inputs:
     required: false
   SIMPLIFIER_USERNAME:
     description: 'Simplifier username, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
-    required: false
+    required: true
   SIMPLIFIER_PASSWORD:
     description: 'Simplifier password, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
-    required: false
+    required: true
 
 # Validate all resources using Firely Terminal 
 runs:
