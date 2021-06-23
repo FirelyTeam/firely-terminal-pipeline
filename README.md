@@ -24,8 +24,8 @@ You can specify the following options using the ["with" syntax](https://docs.git
     - description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
     - required: false
 * PATH_TO_QUALITY_CONTROL_RULES:
-    description: 'Relative path pointing to Quality Control rules. Path MUST not include the .rules.yaml part of the file. Runs minimal.rules.yaml by default.'
-    required: false
+    - description: 'Relative path pointing to Quality Control rules. Path MUST not include the .rules.yaml part of the file. Runs minimal.rules.yaml by default.'
+    - required: false
 * DOTNET_VALIDATION_ENABLED:
     - description: 'Boolean flag to run the .NET validator to validate conformance resources and examples'
     - required: false
