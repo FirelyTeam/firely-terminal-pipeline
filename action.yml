@@ -152,7 +152,7 @@ runs:
     - name: Run Quality Control checks
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
-          fhir check $PATH_TO_QUALITY_CONTROL_RULES
+          fhir check $INPUT_PATH_TO_QUALITY_CONTROL_RULES
         fi
       shell: bash
       env:
