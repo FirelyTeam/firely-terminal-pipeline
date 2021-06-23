@@ -143,7 +143,6 @@ runs:
             fhir pop > /dev/null
           done
         fi
-        echo "Finished validation using .NET validator (Conformance resources) ..."
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
@@ -159,6 +158,13 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_PATH_TO_QUALITY_CONTROL_RULES: ${{ inputs.PATH_TO_QUALITY_CONTROL_RULES }}
+        
+   - name: Report Success (.NET)
+     run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          echo "Finished validation using .NET validator (Conformance resources) ..."
+        fi
+     shell: bash
       
     #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
     
