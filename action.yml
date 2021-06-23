@@ -8,6 +8,9 @@ inputs:
   PATH_TO_EXAMPLES:
     description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
     required: false
+  PATH_TO_QUALITY_CONTROL_RULES:
+    description: 'Relative path pointing to Quality Control rules. Path MUST not include the .rules.yaml part of the file. Runs minimal.rules.yaml by default.'
+    required: false
   DOTNET_VALIDATION_ENABLED:
     description: 'Boolean flag to run the .NET validator to validate conformance resources and examples'
     required: false
@@ -145,6 +148,17 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
+        
+    # Run Quality Control checks
+    - name: Run Quality Control checks
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          fhir check $PATH_TO_QUALITY_CONTROL_RULES
+        fi
+      shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_PATH_TO_QUALITY_CONTROL_RULES: ${{ inputs.PATH_TO_QUALITY_CONTROL_RULES }}
       
     #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
     
