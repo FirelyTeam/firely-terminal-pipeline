@@ -23,6 +23,9 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * PATH_TO_EXAMPLES:
     - description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
     - required: false
+* PATH_TO_QUALITY_CONTROL_RULES:
+    description: 'Relative path pointing to Quality Control rules. Path MUST not include the .rules.yaml part of the file. Runs minimal.rules.yaml by default.'
+    required: false
 * DOTNET_VALIDATION_ENABLED:
     - description: 'Boolean flag to run the .NET validator to validate conformance resources and examples'
     - required: false
@@ -39,6 +42,10 @@ You can specify the following options using the ["with" syntax](https://docs.git
     -  required: false
 
 ## Changelog
+
+### v0.2.0  - 2021-06-23
+- Feature: Enable Quality Control if DOTNET_VALIDATION_ENABLED is enabled
+- Feature: Upgrade Java validator to version 5.4.5
 
 ### v0.1.0-beta2 - 2021-04-22
 - Feature: Upgrade Java validator to version 5.3.11
