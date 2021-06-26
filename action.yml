@@ -373,3 +373,34 @@ runs:
       shell: bash
       env:
        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+       
+       
+    # Test Firely SDK version
+    - name: Check npm Version
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          CHECK_NPM_VERSION=$(npm --version)
+          echo "NPM_VERSION: $CHECK_NPM_VERSION"
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        
+    - name: Install fsh-sushi
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          npm install -g fsh-sushi@$SUSHI_VERSION
+        fi
+      shell: bash
+      env:
+        SUSHI_VERSION: 2.0.0-beta.1
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        
+    - name: Check SUSHI version
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          sushi -v
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
