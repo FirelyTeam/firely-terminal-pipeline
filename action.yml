@@ -387,7 +387,7 @@ runs:
     - name: Install fsh-sushi
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
-          npm install -g fsh-sushi@$SUSHI_VERSION
+          npm install fsh-sushi@$SUSHI_VERSION
         fi
       shell: bash
       env:
