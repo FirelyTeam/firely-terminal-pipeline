@@ -38,6 +38,7 @@ inputs:
   SUSHI_ENABLED:
     description: 'Boolean flag to run fsh-sushi on the current repository to generated conformance resources based on FHIR shorthand'
     required: false
+    default: false
   SUSHI_OPTIONS:
     description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
     required: false
@@ -46,6 +47,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+  
+    # --------------------------------------------------------------------------------------------------- #
+    #                                            .NET Validator                                           #
+    # --------------------------------------------------------------------------------------------------- #
   
     # Firely.Terminal steps
     
@@ -188,6 +193,10 @@ runs:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
       
     #Examples are currently not used as Firely Terminal can't validate against profiles on the stack right now
+    
+    # --------------------------------------------------------------------------------------------------- #
+    #                                            JAVA Validator                                           #
+    # --------------------------------------------------------------------------------------------------- #
     
     # Offical HL7 Java validator steps
     
@@ -347,3 +356,19 @@ runs:
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
+       
+    # --------------------------------------------------------------------------------------------------- #
+    #                                                 SUSHI                                               #
+    # --------------------------------------------------------------------------------------------------- #
+    
+    - name: Check if npm is installed
+      run: |
+        if $INPUT_SUSHI_ENABLED; then
+          if ! command -v npm &> /dev/null
+          then
+              echo "npm could not be found. Please see actions/setup-node to set it up before running this action."
+              exit
+          fi
+        fi
+      env:
+       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
