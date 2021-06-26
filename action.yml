@@ -370,5 +370,6 @@ runs:
               exit
           fi
         fi
+      shell: bash
       env:
        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
