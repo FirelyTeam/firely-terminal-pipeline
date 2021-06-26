@@ -403,3 +403,13 @@ runs:
       shell: bash
       env:
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        
+    - name: Generate conformance resources with SUSHI
+      run: |
+        if $INPUT_SUSHI_ENABLED; then
+          sushi INPUT_SUSHI_OPTIONS
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_SUSHI_OPTIONS: ${{ inputs.SUSHI_OPTIONS }}
