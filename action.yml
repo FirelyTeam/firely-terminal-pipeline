@@ -376,7 +376,7 @@ runs:
        
     - name: Check npm Version
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_SUSHI_ENABLED; then
           CHECK_NPM_VERSION=$(npm --version)
           echo "NPM_VERSION: $CHECK_NPM_VERSION"
         fi
@@ -386,9 +386,9 @@ runs:
         
     - name: Install fsh-sushi
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_SUSHI_ENABLED; then
           sudo chown -R $USER /usr/local/lib/node_modules
-          npm install -g fsh-sushi@$SUSHI_VERSION
+          sudo npm install -g fsh-sushi@$SUSHI_VERSION
         fi
       shell: bash
       env:
@@ -397,7 +397,7 @@ runs:
         
     - name: Check SUSHI version
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_SUSHI_ENABLED; then
           sushi -v
         fi
       shell: bash
