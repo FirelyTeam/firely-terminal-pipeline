@@ -40,6 +40,15 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * OUTPUT_FORMAT:
     - description: Specify the format of the validation output: Allowed values: 'RAW', 'SUMMARY' (produces a markdown compatible overview of all validation issues)
     -  required: false
+ * JAVA_VALIDATION_OPTIONS:
+   - description: 'Custom options passed to the Java validator. See https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'
+   - required: false
+ * SIMPLIFIER_USERNAME:
+   - description: 'Simplifier username, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
+   - required: true
+ * SIMPLIFIER_PASSWORD:
+   - description: 'Simplifier password, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
+   - required: true
 
 ## Changelog
 
@@ -47,7 +56,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
 - Feature: Upgrade Java validator to version 5.4.6
 
 ### v0.2.0  - 2021-06-23
-- Feature: Enable Quality Control if DOTNET_VALIDATION_ENABLED is enabled
+- Feature: Enable Quality Control if DOTNET_VALIDATION_ENABLED is enabled. A Simplifier Login is required to use this feature. See SIMPLIFIER_USERNAME and SIMPLIFIER_PASSWORD option.
 - Feature: Upgrade Java validator to version 5.4.5
 
 ### v0.1.0-beta2 - 2021-04-22
