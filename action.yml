@@ -182,7 +182,7 @@ runs:
         fi
       shell: bash
       env:
-       JAVA_VALIDATOR_VERSION: 5.4.5
+       JAVA_VALIDATOR_VERSION: 5.4.6
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       
     - name: Install jq
