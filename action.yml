@@ -37,7 +37,7 @@ inputs:
     required: true
   SUSHI_ENABLED:
     description: 'Boolean flag to run fsh-sushi on the current repository to generated conformance resources based on FHIR shorthand'
-    required: 'false
+    required: false
   SUSHI_OPTIONS:
     description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
     required: false
