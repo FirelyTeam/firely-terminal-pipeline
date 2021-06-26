@@ -43,6 +43,9 @@ You can specify the following options using the ["with" syntax](https://docs.git
 
 ## Changelog
 
+### v0.2.1 - 2021-06-26
+- Feature: Upgrade Java validator to version 5.4.6
+
 ### v0.2.0  - 2021-06-23
 - Feature: Enable Quality Control if DOTNET_VALIDATION_ENABLED is enabled
 - Feature: Upgrade Java validator to version 5.4.5
