@@ -374,8 +374,6 @@ runs:
       env:
        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
        
-       
-    # Test Firely SDK version
     - name: Check npm Version
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
