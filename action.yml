@@ -191,6 +191,19 @@ runs:
     
     # Offical HL7 Java validator steps
     
+    - name: Check if Java is installed
+      run: |
+        if $INPUT_JAVA_VALIDATION_ENABLED; then
+          if ! command -v java &> /dev/null
+          then
+              echo "java could not be found. Please see actions/setup-java to set it up before running this action."
+              exit
+          fi
+        fi
+      shell: bash
+      env:
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+    
     - name: Download Java Validator
       run: |
         if $INPUT_JAVA_VALIDATION_ENABLED; then
