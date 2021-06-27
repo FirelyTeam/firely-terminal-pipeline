@@ -407,7 +407,7 @@ runs:
     - name: Generate conformance resources with SUSHI
       run: |
         if $INPUT_SUSHI_ENABLED; then
-          sushi INPUT_SUSHI_OPTIONS
+          sushi $INPUT_SUSHI_OPTIONS
         fi
       shell: bash
       env:
