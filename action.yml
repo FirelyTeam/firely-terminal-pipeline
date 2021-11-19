@@ -120,10 +120,8 @@ runs:
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do 
            echo Accessing "$p" and pushing resources to the stack...
-            if [ -d "$GITHUB_WORKSPACE/$p" ] && [ "$p" != "." ]; then
+            if [ -d "$GITHUB_WORKSPACE/$p" ]; then
               cd $GITHUB_WORKSPACE/$p
-              fhir push .
-            elif [ "$p" == "." ]; then
               fhir push .
             else
               echo Cannot access "$p" as the path does not exist
@@ -139,6 +137,10 @@ runs:
     - name: FHIR Dependency restore
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          if [ ! -f "package.json" ]; then
+            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
+            exit
+          fi
           FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
