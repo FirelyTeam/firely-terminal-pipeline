@@ -139,7 +139,7 @@ runs:
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
           if [ ! -f "package.json" ]; then
             echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
-            exit
+            exit 1
           fi
           FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
           echo "Restore of package.json was successful: $FHIR_RESTORE"
