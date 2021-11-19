@@ -121,7 +121,9 @@ runs:
           do 
            echo Accessing "$p" and pushing resources to the stack...
             if [ -d "$GITHUB_WORKSPACE/$p" ]; then
-             cd $GITHUB_WORKSPACE/$p
+              cd $GITHUB_WORKSPACE/$p
+              fhir push .
+            elif [ "$p" != "." ];
               fhir push .
             else
               echo Cannot access "$p" as the path does not exist
