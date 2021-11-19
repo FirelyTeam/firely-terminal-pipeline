@@ -123,7 +123,7 @@ runs:
             if [ -d "$GITHUB_WORKSPACE/$p" ]; then
               cd $GITHUB_WORKSPACE/$p
               fhir push .
-            elif [ "$p" != "." ];
+            elif [ "$p" != "." ]; then
               fhir push .
             else
               echo Cannot access "$p" as the path does not exist
