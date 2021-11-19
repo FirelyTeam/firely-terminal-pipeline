@@ -120,7 +120,7 @@ runs:
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do 
            echo Accessing "$p" and pushing resources to the stack...
-            if [ -d "$GITHUB_WORKSPACE/$p" ]; then
+            if [ -d "$GITHUB_WORKSPACE/$p" ] && [ "$p" != "." ]; then
               cd $GITHUB_WORKSPACE/$p
               fhir push .
             elif [ "$p" == "." ]; then
