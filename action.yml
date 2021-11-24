@@ -60,7 +60,7 @@ runs:
           if ! command -v dotnet &> /dev/null
           then
               echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
-              exit
+              exit 1
           fi
         fi
       shell: bash
@@ -210,7 +210,7 @@ runs:
           if ! command -v java &> /dev/null
           then
               echo "java could not be found. Please see actions/setup-java to set it up before running this action."
-              exit
+              exit 1
           fi
         fi
       shell: bash
@@ -371,7 +371,7 @@ runs:
           if ! command -v npm &> /dev/null
           then
               echo "npm could not be found. Please see actions/setup-node to set it up before running this action."
-              exit
+              exit 1
           fi
         fi
       shell: bash
