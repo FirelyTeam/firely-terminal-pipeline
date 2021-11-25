@@ -411,6 +411,7 @@ runs:
     - name: Generate conformance resources with SUSHI
       run: |
         if $INPUT_SUSHI_ENABLED; then
+          fhir bake-cache
           sushi $INPUT_SUSHI_OPTIONS
         fi
       shell: bash
