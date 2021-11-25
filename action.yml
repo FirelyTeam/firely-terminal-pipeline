@@ -141,6 +141,7 @@ runs:
             echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
             exit 1
           fi
+          ln -s ~/.local/share/.fhir ~/.fhir # Create a symlink because Firely.Terminal does not install packages according to the spec
           FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
@@ -411,9 +412,7 @@ runs:
     - name: Generate conformance resources with SUSHI
       run: |
         if $INPUT_SUSHI_ENABLED; then
-          sushi $INPUT_SUSHI_OPTIONS || true
-          fhir bake-cache
-          sushi $INPUT_SUSHI_OPTIONS || true
+          sushi $INPUT_SUSHI_OPTIONS
         fi
       shell: bash
       env:
