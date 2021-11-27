@@ -108,6 +108,7 @@ runs:
        fi
       shell: bash
       env:
+       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
     
