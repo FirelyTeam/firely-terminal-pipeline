@@ -267,13 +267,13 @@ runs:
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do  
-            COMBINED_IG_PARAMETERS=$(echo "$COMBINED_IG_PARAMETERS" | sed -e "s{-ig "$GITHUB_WORKSPACE"/"$p"{{") # Don't use / as the delimiter as it might occur in the original string itself as part of the path
+            #COMBINED_IG_PARAMETERS=$(echo "$COMBINED_IG_PARAMETERS" | sed -e "s{-ig "$GITHUB_WORKSPACE"/"$p"{{") # Don't use / as the delimiter as it might occur in the original string itself as part of the path
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES || true)
             else
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES)
             fi
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
