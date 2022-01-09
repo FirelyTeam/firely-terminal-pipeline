@@ -262,7 +262,7 @@ runs:
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
           do  
-            COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
+            LOCAL_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
           done
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
@@ -271,9 +271,9 @@ runs:
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES || true)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS|| true)
             else
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS)
             fi
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
