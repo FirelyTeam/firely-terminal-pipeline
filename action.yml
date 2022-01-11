@@ -111,6 +111,22 @@ runs:
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
+       
+    # Restore all dependencies listed in the package.json file (need to be on the root level)
+    - name: FHIR Dependency restore
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          if [ ! -f "package.json" ]; then
+            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
+            exit 1
+          fi
+          FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
+          fhir bake
+          echo "Restore of package.json was successful: $FHIR_RESTORE"
+        fi
+      shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
     
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
@@ -132,21 +148,6 @@ runs:
       shell: bash
       env:
         INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-      
-    # Restore all dependencies listed in the package.json file (need to be on the root level)
-    - name: FHIR Dependency restore
-      run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
-          if [ ! -f "package.json" ]; then
-            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
-            exit 1
-          fi
-          FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
-          echo "Restore of package.json was successful: $FHIR_RESTORE"
-        fi
-      shell: bash
-      env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
     
     # Validate all conformance resources on the stack
