@@ -2,8 +2,8 @@
 Run [Firely Terminal](https://fire.ly/products/firely-terminal/), and optionally the Java Validator too, as GitHub Actions on your FHIR GitHub repository. Validate conformance resource and examples against the FHIR specification and [your custom business rules](https://fire.ly/2021/03/04/quality-control-how-to-validate-full-fhir-specifications-in-one-click/) on every commit and pull request.
 <img align="right" width="40%" src="illustration_firely_terminal.png">
 
-Example setup can be found on [this project](https://github.com/FirelyTeam/ACMEGitHubExample):
-* Copy the contents of or download [this example `main.yml` setup file](https://github.com/FirelyTeam/ACMEGitHubExample/blob/main/.github/workflows/main.yml).
+Example setup can be found on [this project](https://github.com/FirelyTeam/fhir-specification-template-repository):
+* Copy the contents of or download [this example `main.yml` setup file](https://github.com/FirelyTeam/fhir-specification-template-repository/blob/main/.github/workflows/main.yml).
 * Add the contents to a `main.yml` file in your GitHub repository in the `.github/workflows` folder.
 * You should now see the pipeline on your Actions tab and it should run on every push or pull request to the `main` or `master` branch. This can be configured in the yml file.
 
