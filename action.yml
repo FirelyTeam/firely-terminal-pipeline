@@ -30,7 +30,7 @@ inputs:
     description: 'Custom options passed to the Java validator. See https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'
     required: false
   SIMPLIFIER_USERNAME:
-    description: 'Simplifier username, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
+    description: 'Simplifier email address (not username), needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
     required: true
   SIMPLIFIER_PASSWORD:
     description: 'Simplifier password, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
