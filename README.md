@@ -13,7 +13,7 @@ You can add a badge to your repository with the current pipeline status:
 * Select the three dots and click 'Create status badge'
 * Paste this code in the beginning of your `README.md` file.
 
-## Input
+## Input (FHIR Conformance resources)
 
 The Firely Terminal Pipeline allows to validate all FHIR conformnce resources and corresponding examples.
 The pipeline expects the following content to be present in the repository:
