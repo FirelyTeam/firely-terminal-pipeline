@@ -13,12 +13,23 @@ You can add a badge to your repository with the current pipeline status:
 * Select the three dots and click 'Create status badge'
 * Paste this code in the beginning of your `README.md` file.
 
+## Input
+
+The Firely Terminal Pipeline allows to validate all FHIR conformnce resources and corresponding examples.
+The pipeline expects the following content to be present in the repository:
+
+* package.json containing all dependencies of the project (required, root-level of the project)
+* project.yaml containing [canonical claims](https://docs.fire.ly/projects/Simplifier/simplifierCanonicalClaims.html) (optional, root-level of the project)
+* A folder containing all terminology resources (optional, path can be configured. See PATH_TO_CONFORMANCE_RESOURCES)
+* A folder containing all StructureDefinitions (optional, path can be configured. See PATH_TO_CONFORMANCE_RESOURCES)
+* A folder containing all examples (optional, path can be configured. See PATH_TO_EXAMPLES)
+
 ## Options
 
 You can specify the following options using the ["with" syntax](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepswith) in your GitHub Actions yml configuration:
 
 * PATH_TO_CONFORMANCE_RESOURCES:
-    - description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem)'
+    - description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem).'
     - required: true
 * PATH_TO_EXAMPLES:
     - description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
