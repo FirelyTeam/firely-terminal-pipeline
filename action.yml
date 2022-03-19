@@ -270,7 +270,7 @@ runs:
           
             # Ensure directory ends with "/"
             if [[ ! "$p" =~ .*/$ ]]; then
-              p = "$p/"
+              p="$p/"
             fi
             
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
