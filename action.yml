@@ -123,7 +123,7 @@ runs:
           
           fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
           for fhirVersion in ${fhirVersions[@]}; do
-            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index("4.0.1")')
+            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index("$fhirVersion")')
             if [[ ! "$fhirVersionFoundInPackageJson" = "null" ]]; then
               echo "Found FHIR version $fhirVersionFoundInPackageJson in package.json"
               if [[ "$fhirVersion" = "3.0.2" ]]; then
