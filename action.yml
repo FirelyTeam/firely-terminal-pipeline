@@ -120,6 +120,27 @@ runs:
             echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
             exit 1
           fi
+          
+          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
+          for fhirVersion in ${fhirVersions[@]}; do
+            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index("4.0.1")')
+            if [[ ! "$fhirVersionFoundInPackageJson" = "null" ]]; then
+              echo "Found FHIR version $fhirVersion in package.json"
+              if [[ "$fhirVersion" = "3.0.2" ]]; then
+                fhir spec R3
+              elif [[ "$fhirVersion" = "4.0.1" ]]; then
+                fhir spec R4
+              elif [[ "$fhirVersion" = "4.1.0" ]]; then
+                fhir spec R4B
+              elif [[ "$fhirVersion" = "4.6.0" ]]; then
+                fhir spec R5
+              else
+                echo "This FHIR version is currently not supported.";
+                exit 1
+              fi
+            fi
+          done
+          
           FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
