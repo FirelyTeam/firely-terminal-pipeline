@@ -125,15 +125,19 @@ runs:
           for fhirVersion in ${fhirVersions[@]}; do
             fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index("4.0.1")')
             if [[ ! "$fhirVersionFoundInPackageJson" = "null" ]]; then
-              echo "Found FHIR version $fhirVersion in package.json"
+              echo "Found FHIR version $fhirVersionFoundInPackageJson in package.json"
               if [[ "$fhirVersion" = "3.0.2" ]]; then
                 fhir spec R3
+                break
               elif [[ "$fhirVersion" = "4.0.1" ]]; then
                 fhir spec R4
+                break
               elif [[ "$fhirVersion" = "4.1.0" ]]; then
                 fhir spec R4B
+                break
               elif [[ "$fhirVersion" = "4.6.0" ]]; then
                 fhir spec R5
+                break
               else
                 echo "This FHIR version is currently not supported.";
                 exit 1
