@@ -125,7 +125,7 @@ runs:
           for fhirVersion in ${fhirVersions[@]}; do
             fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index("$fhirVersion")')
             if [[ ! "$fhirVersionFoundInPackageJson" = "null" ]]; then
-              echo "Found FHIR version $fhirVersionFoundInPackageJson in package.json"
+              echo "Found FHIR version $fhirVersion in package.json"
               if [[ "$fhirVersion" = "3.0.2" ]]; then
                 fhir spec R3
                 break
