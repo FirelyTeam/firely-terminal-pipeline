@@ -56,7 +56,7 @@ runs:
     
     - name: Check if .NET is installed
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
           if ! command -v dotnet &> /dev/null
           then
               echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
@@ -66,56 +66,61 @@ runs:
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         
     # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
           CHECK_DOTNET_VERSION=$(dotnet --version)
           echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
         fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
           
     # Install Firely.Terminal
     - name: Install Firely.Terminal
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
           dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
         fi
       shell: bash
       env:
        FIRELY_TERMINAL_VERSION: 2.5.0-beta-7
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
          CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
           echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
         fi
       shell: bash
       env:
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
     
     # Simplifier Login
     - name: Simplifier login
       run: |
-       if $INPUT_DOTNET_VALIDATION_ENABLED; then
+       if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
         fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
        fi
       shell: bash
       env:
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
        
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
           if [ ! -f "package.json" ]; then
             echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
             exit 1
@@ -151,6 +156,7 @@ runs:
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
     
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
