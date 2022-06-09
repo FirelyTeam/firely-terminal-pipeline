@@ -49,7 +49,7 @@ runs:
   steps:
   
     # --------------------------------------------------------------------------------------------------- #
-    #                                            .NET Validator                                           #
+    #                                        FIRELY TERMINAL RESTORE                                      #
     # --------------------------------------------------------------------------------------------------- #
   
     # Firely.Terminal steps
@@ -157,6 +157,67 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        
+    # --------------------------------------------------------------------------------------------------- #
+    #                                                 SUSHI                                               #
+    # --------------------------------------------------------------------------------------------------- #
+    
+    - name: Check if npm is installed
+      run: |
+        if $INPUT_SUSHI_ENABLED; then
+          if ! command -v npm &> /dev/null
+          then
+              echo "npm could not be found. Please see actions/setup-node to set it up before running this action."
+              exit 1
+          fi
+        fi
+      shell: bash
+      env:
+       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+       
+    - name: Check npm Version
+      run: |
+        if $INPUT_SUSHI_ENABLED; then
+          CHECK_NPM_VERSION=$(npm --version)
+          echo "NPM_VERSION: $CHECK_NPM_VERSION"
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        
+    - name: Install fsh-sushi
+      run: |
+        if $INPUT_SUSHI_ENABLED; then
+          sudo chown -R $USER /usr/local/lib/node_modules
+          sudo npm install -g fsh-sushi@$SUSHI_VERSION
+        fi
+      shell: bash
+      env:
+        SUSHI_VERSION: 2.5.0
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        
+    - name: Check SUSHI version
+      run: |
+        if $INPUT_SUSHI_ENABLED; then
+          sushi -v
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        
+    - name: Generate conformance resources with SUSHI
+      run: |
+        if $INPUT_SUSHI_ENABLED; then
+          sushi $INPUT_SUSHI_OPTIONS
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_SUSHI_OPTIONS: ${{ inputs.SUSHI_OPTIONS }}
+        
+    # --------------------------------------------------------------------------------------------------- #
+    #                                            .NET VALIDATOR                                           #
+    # --------------------------------------------------------------------------------------------------- #
     
     # Add conformance resources for validation to the stack
     - name: Add resources to the Firely Terminal stack
@@ -403,60 +464,3 @@ runs:
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
-       
-    # --------------------------------------------------------------------------------------------------- #
-    #                                                 SUSHI                                               #
-    # --------------------------------------------------------------------------------------------------- #
-    
-    - name: Check if npm is installed
-      run: |
-        if $INPUT_SUSHI_ENABLED; then
-          if ! command -v npm &> /dev/null
-          then
-              echo "npm could not be found. Please see actions/setup-node to set it up before running this action."
-              exit 1
-          fi
-        fi
-      shell: bash
-      env:
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-       
-    - name: Check npm Version
-      run: |
-        if $INPUT_SUSHI_ENABLED; then
-          CHECK_NPM_VERSION=$(npm --version)
-          echo "NPM_VERSION: $CHECK_NPM_VERSION"
-        fi
-      shell: bash
-      env:
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        
-    - name: Install fsh-sushi
-      run: |
-        if $INPUT_SUSHI_ENABLED; then
-          sudo chown -R $USER /usr/local/lib/node_modules
-          sudo npm install -g fsh-sushi@$SUSHI_VERSION
-        fi
-      shell: bash
-      env:
-        SUSHI_VERSION: 2.5.0
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        
-    - name: Check SUSHI version
-      run: |
-        if $INPUT_SUSHI_ENABLED; then
-          sushi -v
-        fi
-      shell: bash
-      env:
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        
-    - name: Generate conformance resources with SUSHI
-      run: |
-        if $INPUT_SUSHI_ENABLED; then
-          sushi $INPUT_SUSHI_OPTIONS
-        fi
-      shell: bash
-      env:
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        INPUT_SUSHI_OPTIONS: ${{ inputs.SUSHI_OPTIONS }}
