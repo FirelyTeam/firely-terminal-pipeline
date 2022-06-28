@@ -151,7 +151,7 @@ runs:
           done
           
           if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
-            FHIR_RESTORE=$(fhir restore | tr '\n' ' ' || true)  # Print everything in a single line
+            FHIR_RESTORE=$(fhir restore || true | tr '\n' ' ')  # Print everything in a single line
           else
             FHIR_RESTORE=$(fhir restore | tr '\n' ' ')
           fi
