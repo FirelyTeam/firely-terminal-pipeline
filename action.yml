@@ -150,13 +150,18 @@ runs:
             fi
           done
           
-          FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
+          if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
+            FHIR_RESTORE=$(fhir restore | tr '\n' ' ' || true)  # Print everything in a single line
+          else
+            FHIR_RESTORE=$(fhir restore | tr '\n' ' ')
+          fi
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
         
     # --------------------------------------------------------------------------------------------------- #
     #                                                 SUSHI                                               #
