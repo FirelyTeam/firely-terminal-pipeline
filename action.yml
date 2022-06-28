@@ -151,8 +151,10 @@ runs:
           done
           
           if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
+            echo "INPUT_EXPECTED_FAILS VALIDATION_CONFORMANCE_DOTNET"
             FHIR_RESTORE=$(fhir restore || true | tr '\n' ' ')  # Print everything in a single line
           else
+           echo "NO INPUT_EXPECTED_FAILS"
             FHIR_RESTORE=$(fhir restore | tr '\n' ' ')
           fi
           echo "Restore of package.json was successful: $FHIR_RESTORE"
