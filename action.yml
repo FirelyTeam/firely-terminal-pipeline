@@ -84,7 +84,10 @@ runs:
     - name: Install Firely.Terminal
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
-          dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
+          if ! command -v fhir &> /dev/null
+          then
+            dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
+          fi
         fi
       shell: bash
       env:
