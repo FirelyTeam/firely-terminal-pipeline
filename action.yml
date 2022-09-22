@@ -42,6 +42,10 @@ inputs:
   SUSHI_OPTIONS:
     description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
     required: false
+  FIRELY_TERMINAL_VERSION:
+    description: 'Version of Firely Terminal used for .NET-based validation'
+    default: '2.5.0-beta-7'
+    required: true
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -91,7 +95,7 @@ runs:
         fi
       shell: bash
       env:
-       FIRELY_TERMINAL_VERSION: 2.5.0-beta-7
+       FIRELY_TERMINAL_VERSION: ${{ inputs.FIRELY_TERMINAL_VERSION }}
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
       
