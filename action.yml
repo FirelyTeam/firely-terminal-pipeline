@@ -50,6 +50,10 @@ inputs:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
     default: '5.6.39'
     required: true
+  SUSHI_VERSION:
+    description: 'Version of SUSHI used for compiling the FSH files'
+    default: '2.5.0'
+    required: true
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -204,7 +208,7 @@ runs:
         fi
       shell: bash
       env:
-        SUSHI_VERSION: 2.5.0
+        SUSHI_VERSION: ${{ inputs.SUSHI_VERSION }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         
     - name: Check SUSHI version
