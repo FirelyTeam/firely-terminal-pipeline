@@ -60,6 +60,25 @@ You can specify the following options using the ["with" syntax](https://docs.git
  * SIMPLIFIER_PASSWORD:
    - description: 'Simplifier password, needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
    - required: true
+ * SUSHI_ENABLED:
+    description: 'Boolean flag to run fsh-sushi on the current repository to generated conformance resources based on FHIR shorthand'
+    required: false
+    default: false
+ * SUSHI_OPTIONS:
+    description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
+    required: false
+ * FIRELY_TERMINAL_VERSION:
+    description: 'Version of Firely Terminal used for .NET-based validation'
+    default: '3.0.0'
+    required: true
+ * JAVA_VALIDATOR_VERSION:
+    description: 'Version of org.hl7.fhir.core library used for Java-based validation'
+    default: '5.6.65'
+    required: true
+ * SUSHI_VERSION:
+    description: 'Version of SUSHI used for compiling the FSH files'
+    default: '2.7.0'
+    required: true
 
 ## Changelog
 
