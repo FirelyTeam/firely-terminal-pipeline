@@ -82,6 +82,54 @@ You can specify the following options using the ["with" syntax](https://docs.git
 
 ## Changelog
 
+### v0.4.1 - 2024-03-18
+
+- Feature: Upgrade Firely Terminal to v3.1.0
+- Feature: Upgrade Java validator to v6.3.1
+- Feature: Upgrade SUHSI to v3.8.0
+
+### v0.4.0 - 2023-02-20
+
+- Feature: Upgrade Java validator to v5.6.98
+- Feature: Remove 1 by 1 validation with .NET validator in favor for Simplifier Quality Control
+
+### v0.3.5 - 2022-09-22
+
+- Fix: Always execute fhir restore if SUSHI is enabled
+- Fix: Run SUSHI before validation
+- Fix: Only install Firely Terminal if it's not already installed
+- Feature: Add FIRELY_TERMINAL_VERSION, JAVA_VALIDATOR_VERSION, SUSHI_VERSION as options
+- Feature: Upgrade Firely Terminal to v3.0.0
+- Feature: Upgrade Java validator to v5.6.65
+- Feature: Upgrade SUHSI to v2.7.0
+
+### v0.3.4 - 2022-06-01
+
+- Feature: Upgrade SUSHI to v2.5.0
+
+### v0.3.3 - 2022-03-30
+
+- Fix: Only load XML and JSON files in Java validator
+- Fix: Check fhirVersion in package.json and execute fhir spec
+- Feature: Upgrade Java validator to v5.6.39
+
+### v0.3.2 - 2022-01-26
+
+- Feature: Upgrade Firely.Terminal to v2.5.0-beta-7
+- Feature: Upgrade Java validator to v5.6.27
+- Feature: Upgrade SUSHI to v2.2.6
+
+### v0.3.1 - 2021-12-08
+
+- Feature: Upgrade Firely.Terminal to v2.5.0-beta-4
+
+### v0.3.0 - 2021-11-25
+
+- Feature: Add SUSHI_ENABLED and SUSHI_OPTIONS options
+- Feature: Add option to push resource without subfolders
+- Feature: Update to Firely.Terminal v2.5.0-beta-2
+- Feature: Update Java validator to v5.6.0
+
 ### v0.2.1 - 2021-06-26
 - Feature: Upgrade Java validator to version 5.4.6
 
