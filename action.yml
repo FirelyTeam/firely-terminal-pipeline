@@ -48,11 +48,11 @@ inputs:
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.3.1'
+    default: '6.3.14'
     required: true
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
-    default: '3.8.0'
+    default: '3.11.0'
     required: true
 
 # Validate all resources using Firely Terminal 
