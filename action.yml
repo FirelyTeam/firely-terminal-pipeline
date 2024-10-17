@@ -44,15 +44,15 @@ inputs:
     required: false
   FIRELY_TERMINAL_VERSION:
     description: 'Version of Firely Terminal used for .NET-based validation'
-    default: '3.1.0'
+    default: '3.3.0'
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.3.14'
+    default: '6.3.32'
     required: true
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
-    default: '3.11.0'
+    default: '3.12.0'
     required: true
 
 # Validate all resources using Firely Terminal 
@@ -164,7 +164,8 @@ runs:
               fi
             fi
           done
-          
+
+          echo "Attempting to restore package dependencies based on package.json ..."
           FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
@@ -238,6 +239,7 @@ runs:
     - name: Run Quality Control checks
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          echo "Running quality control checks incl. validation based on Firely Terminal ..."
           fhir check $INPUT_PATH_TO_QUALITY_CONTROL_RULES
         fi
       shell: bash
