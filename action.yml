@@ -166,7 +166,7 @@ runs:
           done
 
           echo "Attempting to restore package dependencies based on package.json ..."
-          FHIR_RESTORE=$(fhir restore | tr '\n' ' ')  # Print everything in a single line
+          FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
       shell: bash
