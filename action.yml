@@ -167,6 +167,10 @@ runs:
 
           echo "Attempting to restore package dependencies based on package.json ..."
           FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
+          if [[ "$FHIR_RESTORE" == *"Cannot restore"* ]]; then
+            echo $FHIR_RESTORE
+            exit 1
+          fi
           echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
       shell: bash
