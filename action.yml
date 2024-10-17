@@ -44,7 +44,7 @@ inputs:
     required: false
   FIRELY_TERMINAL_VERSION:
     description: 'Version of Firely Terminal used for .NET-based validation'
-    default: '3.3.0'
+    default: '3.2.0'
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
