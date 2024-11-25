@@ -69,18 +69,35 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - required: false
  * FIRELY_TERMINAL_VERSION:
    - description: 'Version of Firely Terminal used for .NET-based validation'
-   - default: '3.1.0'
+   - default: '3.3.2'
    - required: true
  * JAVA_VALIDATOR_VERSION:
    - description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-   - default: '6.3.1'
+   - default: '6.4.4'
    - required: true
  * SUSHI_VERSION:
    - description: 'Version of SUSHI used for compiling the FSH files'
-   - default: '3.8.0'
+   - default: '3.12.2'
    - required: true
 
 ## Changelog
+
+### v0.4.4 - 2024-10-18
+
+- Feature: Upgrade Firely Terminal to v3.3.2
+- Feature: Upgrade Java validator to v6.4.4
+- Feature: Upgrade SUHSI to v3.12.2
+
+### v0.4.3 - 2024-10-18
+
+- Feature: Upgrade Firely Terminal to v3.2.0
+- Feature: Upgrade Java validator to v6.3.32
+- Feature: Upgrade SUHSI to v3.12.0
+
+### v0.4.2 - 2024-06-05
+
+- Feature: Upgrade Java validator to v6.3.14
+- Feature: Upgrade SUHSI to v3.11.0
 
 ### v0.4.1 - 2024-03-18
 
