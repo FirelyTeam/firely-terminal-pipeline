@@ -44,15 +44,15 @@ inputs:
     required: false
   FIRELY_TERMINAL_VERSION:
     description: 'Version of Firely Terminal used for .NET-based validation'
-    default: '3.2.0'
+    default: '3.3.2'
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.3.32'
+    default: '6.4.4'
     required: true
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
-    default: '3.12.0'
+    default: '3.12.2'
     required: true
 
 # Validate all resources using Firely Terminal 
