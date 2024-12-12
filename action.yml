@@ -48,7 +48,7 @@ inputs:
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.4.4'
+    default: '6.5.0'
     required: true
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
