@@ -293,7 +293,7 @@ runs:
           JAVA_VALIDATOR_DOWNLOAD_LOCATION=$(eval echo "$JAVA_VALIDATOR_DOWNLOAD_LOCATION")
           echo "JAVA_VALIDATOR_DOWNLOAD_LOCATION: $JAVA_VALIDATOR_DOWNLOAD_LOCATION"
           
-          wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION
+          wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION -O validator_cli.jar
         fi
       shell: bash
       env:
