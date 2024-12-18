@@ -50,6 +50,9 @@ inputs:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
     default: '6.5.0'
     required: true
+  JAVA_VALIDATOR_DOWNLOAD_LOCATION:
+    description: 'URL from which to download the Java validator JAR'
+    default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
     default: '3.12.1'
@@ -286,12 +289,14 @@ runs:
         if $INPUT_JAVA_VALIDATION_ENABLED; then
           CHECK_JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2)
           echo "JAVA_VERSION: $CHECK_JAVA_VERSION"
-          wget -q https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar
           echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
+          echo "JAVA_VALIDATOR_DOWNLOAD_LOCATION: $JAVA_VALIDATOR_DOWNLOAD_LOCATION"
+          wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION
         fi
       shell: bash
       env:
        JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
+       JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
       
     - name: Install jq
