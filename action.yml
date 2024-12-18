@@ -290,7 +290,9 @@ runs:
           CHECK_JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2)
           echo "JAVA_VERSION: $CHECK_JAVA_VERSION"
           echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
+          JAVA_VALIDATOR_DOWNLOAD_LOCATION=(${!JAVA_VALIDATOR_DOWNLOAD_LOCATION})
           echo "JAVA_VALIDATOR_DOWNLOAD_LOCATION: $JAVA_VALIDATOR_DOWNLOAD_LOCATION"
+          
           wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION
         fi
       shell: bash
