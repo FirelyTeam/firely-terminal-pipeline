@@ -338,7 +338,13 @@ runs:
           SAVEIFS=$IFS
           IFS=':'
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; do # Get combined path to conformance resources, we want to provide all other directories as context for the current validation, make sure to handle spaces in path
-            LOCAL_IG_PARAMETERS+="-ig \"$GITHUB_WORKSPACE/$p\" "
+            echo "p: $p"
+            # Ensure directory ends with "/"
+            if [[ ! "$p" =~ .*/$ ]]; then
+              p="$p/"
+            fi
+            LOCAL_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
+            echo "LOCAL_IG_PARAMETERS: $LOCAL_IG_PARAMETERS"
           done
           IFS=$SAVEIFS
 
@@ -347,10 +353,6 @@ runs:
           for p in "$INPUT_PATH_TO_CONFORMANCE_RESOURCES"; 
           do
           
-            # Ensure directory ends with "/"
-            if [[ ! "$p" =~ .*/$ ]]; then
-              p="$p/"
-            fi
             echo "p: $p"
             
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
