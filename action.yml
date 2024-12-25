@@ -335,16 +335,15 @@ runs:
           echo "Starting validation using Java validator (Conformance resources) ..."
           IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
 
-          echo "IG_DEPENDENCIES: $IG_DEPENDENCIES"
           SAVEIFS=$IFS
           IFS=':'
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; do # Get combined path to conformance resources, we want to provide all other directories as context for the current validation, make sure to handle spaces in path
-            echo "INPUT_PATH_TO_CONFORMANCE_RESOURCES: $INPUT_PATH_TO_CONFORMANCE_RESOURCES"
             LOCAL_IG_PARAMETERS+="-ig \"$GITHUB_WORKSPACE/$p\" "
-            echo "LOCAL_IG_PARAMETERS: $LOCAL_IG_PARAMETERS"
           done
           IFS=$SAVEIFS
-          
+
+          SAVEIFS=$IFS
+          IFS=':'
           for p in "$INPUT_PATH_TO_CONFORMANCE_RESOURCES"; 
           do
           
@@ -352,6 +351,7 @@ runs:
             if [[ ! "$p" =~ .*/$ ]]; then
               p="$p/"
             fi
+            echo "p: $p"
             
             UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
             
@@ -364,7 +364,7 @@ runs:
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
               echo "$javaValidatorOutput"
             else
-              SAVEIFS=$IFS 
+              SAVEIFS_INNER=$IFS 
               IFS=$'\n'
               pathToValidatedResource=$(echo "$javaValidatorOutput" | grep -P '\-\-\s' || true)
               pathToValidatedResource=($(echo "$pathToValidatedResource" | grep -oP '(?<=--\s).+(?=\s--)' || true))
@@ -403,10 +403,11 @@ runs:
 
                 done
               fi
-              IFS=$SAVEIFS
+              IFS=$SAVEIFS_INNER
             fi
           done
         fi
+        IFS=$SAVEIFS
         echo "Finished validation using Java validator (Conformance resources) ..."
       shell: bash
       env:
