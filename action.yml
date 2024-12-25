@@ -347,7 +347,7 @@ runs:
             if [[ ! "$p" =~ .*/$ ]]; then
               p="$p/"
             fi  
-            LOCAL_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
+            LOCAL_IG_PARAMETERS+="-ig \"$GITHUB_WORKSPACE/$p\" "
           done
           IFS=$SAVEIFS
 
