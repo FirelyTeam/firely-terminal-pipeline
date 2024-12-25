@@ -46,7 +46,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
     - required: false
     - default: false
 * EXPECTED_FAILS:
-    -  description: Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_EXAMPLES_JAVA', 'VALIDATION_EXAMPLES_DOTNET'
+    -  description: Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_EXAMPLES_JAVA'
     -  required: false
 * OUTPUT_FORMAT:
     - description: Specify the format of the validation output: Allowed values: 'RAW', 'SUMMARY' (produces a markdown compatible overview of all validation issues)
@@ -73,16 +73,27 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - required: true
  * JAVA_VALIDATOR_VERSION:
    - description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-   - default: '6.4.4'
+   - default: '6.5.2'
    - required: true
+* JAVA_VALIDATOR_DOWNLOAD_LOCATION:
+    description: 'URL from which to download the Java validator JAR'
+    default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
  * SUSHI_VERSION:
    - description: 'Version of SUSHI used for compiling the FSH files'
-   - default: '3.12.2'
+   - default: '3.13.1'
    - required: true
 
 ## Changelog
 
-### v0.4.4 - 2024-10-18
+### v0.4.6 - 2024-12-12
+
+- Feature: Upgrade Firely Terminal to v3.2.0
+
+### v0.4.5 - 2024-11-25
+
+Hotfix for v0.4.4 which accidentally increased the SUSHI version to v3.12.2 which doesn't exist (yet)
+
+### v0.4.4 - 2024-11-25
 
 - Feature: Upgrade Firely Terminal to v3.3.2
 - Feature: Upgrade Java validator to v6.4.4
