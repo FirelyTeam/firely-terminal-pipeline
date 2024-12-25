@@ -354,6 +354,8 @@ runs:
           # Debugging
           echo "LOCAL_IG_PARAMETERS: $LOCAL_IG_PARAMETERS"
           
+          SAVEIFS=$IFS
+          IFS=':'
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do
           
@@ -371,7 +373,7 @@ runs:
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
               echo "$javaValidatorOutput"
             else
-              SAVEIFS=$IFS 
+              SAVEIFS_INNER=$IFS 
               IFS=$'\n'
               pathToValidatedResource=$(echo "$javaValidatorOutput" | grep -P '\-\-\s' || true)
               pathToValidatedResource=($(echo "$pathToValidatedResource" | grep -oP '(?<=--\s).+(?=\s--)' || true))
@@ -410,9 +412,10 @@ runs:
 
                 done
               fi
-              IFS=$SAVEIFS
+              IFS=$SAVEIFS_INNER
             fi
           done
+          IFS=$SAVEIFS
         fi
         echo "Finished validation using Java validator (Conformance resources) ..."
       shell: bash
