@@ -334,52 +334,32 @@ runs:
         if $INPUT_JAVA_VALIDATION_ENABLED; then
           echo "Starting validation using Java validator (Conformance resources) ..."
           IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
-          UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
           
-          SAVEIFS=$IFS
-          IFS=':'
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
-          do
-
-            # Debugging
-            echo "p: $p"
-
-            if [[ ! "$p" =~ .*/$ ]]; then
-              p="$p/"
-            fi  
-            LOCAL_IG_PARAMETERS+="-ig \"$GITHUB_WORKSPACE/$p\" "
+          do  
+            LOCAL_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
           done
-          IFS=$SAVEIFS
-
-          # Debugging
-          echo "LOCAL_IG_PARAMETERS: $LOCAL_IG_PARAMETERS"
           
-          SAVEIFS=$IFS
-          IFS=':'
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
           do
-            IFS=$SAVEIFS
-
+          
             # Ensure directory ends with "/"
             if [[ ! "$p" =~ .*/$ ]]; then
               p="$p/"
             fi
-
-            # Debugging
-            echo "p: $p"
-            echo "LOCAL_IG_PARAMETERS: $LOCAL_IG_PARAMETERS"
-            echo "UNESCPAED_IG_DEPENDENCIES: $UNESCPAED_IG_DEPENDENCIES"
-
+            
+            UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
+            
             if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              javaValidatorOutput=$(java -jar validator_cli.jar "$GITHUB_WORKSPACE/$p*.xml" "$GITHUB_WORKSPACE/$p*.json" -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS|| true)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS|| true)
             else
-              javaValidatorOutput=$(java -jar validator_cli.jar "$GITHUB_WORKSPACE/$p*.xml" "$GITHUB_WORKSPACE/$p*.json" -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS)
+              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS)
             fi
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
               echo "$javaValidatorOutput"
             else
-              SAVEIFS_INNER=$IFS 
+              SAVEIFS=$IFS 
               IFS=$'\n'
               pathToValidatedResource=$(echo "$javaValidatorOutput" | grep -P '\-\-\s' || true)
               pathToValidatedResource=($(echo "$pathToValidatedResource" | grep -oP '(?<=--\s).+(?=\s--)' || true))
@@ -418,11 +398,9 @@ runs:
 
                 done
               fi
-              IFS=$SAVEIFS_INNER
+              IFS=$SAVEIFS
             fi
-            IFS=':' # Needs to be reset for the next loop
           done
-          IFS=$SAVEIFS
         fi
         echo "Finished validation using Java validator (Conformance resources) ..."
       shell: bash
