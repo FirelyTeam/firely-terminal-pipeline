@@ -337,7 +337,7 @@ runs:
           
           for p in "$INPUT_PATH_TO_CONFORMANCE_RESOURCES"; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
           do  
-            LOCAL_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
+            LOCAL_IG_PARAMETERS+="-ig \"$GITHUB_WORKSPACE/$p\" "
           done
           
           for p in "$INPUT_PATH_TO_CONFORMANCE_RESOURCES"; 
