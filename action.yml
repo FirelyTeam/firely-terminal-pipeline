@@ -20,7 +20,7 @@ inputs:
     required: false
     default: false
   EXPECTED_FAILS:
-    description: 'Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: VALIDATION_CONFORMANCE_JAVA, VALIDATION_CONFORMANCE_DOTNET, VALIDATION_EXAMPLES_JAVA, VALIDATION_EXAMPLES_DOTNET'
+    description: 'Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: VALIDATION_CONFORMANCE_DOTNET, VALIDATION_CONFORMANCE_JAVA, VALIDATION_EXAMPLES_JAVA'
     required: false
   OUTPUT_FORMAT:
     description: 'Specify the format of the validation output: Allowed values: RAW, SUMMARY (produces a markdown compatible overview of all validation issues)'
@@ -48,14 +48,14 @@ inputs:
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.5.0'
+    default: '6.5.2'
     required: true
   JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
     default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
-    default: '3.12.1'
+    default: '3.13.1'
     required: true
 
 # Validate all resources using Firely Terminal 
@@ -247,10 +247,15 @@ runs:
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
           echo "Running quality control checks incl. validation based on Firely Terminal ..."
-          fhir check $INPUT_PATH_TO_QUALITY_CONTROL_RULES
+          if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
+            fhir check $INPUT_PATH_TO_QUALITY_CONTROL_RULES
+          else
+            fhir check --fail $INPUT_PATH_TO_QUALITY_CONTROL_RULES
+          fi
         fi
       shell: bash
       env:
+        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_PATH_TO_QUALITY_CONTROL_RULES: ${{ inputs.PATH_TO_QUALITY_CONTROL_RULES }}
         
