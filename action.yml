@@ -319,6 +319,10 @@ runs:
           
     - name: Validate all conformance resources in scope of the repository
       run: |
+
+        # Define color codes
+        RED='\033[31m'
+        NC='\033[0m' # No Color
       
         print_output_details () {
           levels=($(echo "$1" | grep -P '(Error|Warning|Information)'| grep -oP '(?<=\s)[^\s]+(?=\s@)'))
