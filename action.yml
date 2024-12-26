@@ -356,6 +356,8 @@ runs:
             else
               javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS)
             fi
+
+            javaValidatorOutput=$(echo "$javaValidatorOutput" | sed -E "s/(:[[:space:]]*)Error([[:space:]]+-)/\1${RED}Error${NC}\2/")
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
               echo "$javaValidatorOutput"
