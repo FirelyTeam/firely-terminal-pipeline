@@ -28,6 +28,7 @@ inputs:
     required: false
   JAVA_VALIDATION_OPTIONS:
     description: 'Custom options passed to the Java validator. See https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'
+    default: '-output-style compact'
     required: false
   SIMPLIFIER_USERNAME:
     description: 'Simplifier email address (not username), needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
