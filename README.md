@@ -85,7 +85,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
 
 ### v0.5.0 - 2024-12-26
 
-This version is besides the fix mentioned below identical to v0.4.7. Due to the removed options, the last release should have been relased as v0.5.0 already. Sorry!
+This version is beside the fix mentioned below identical to v0.4.7. Due to the previously removed and changed options, the last release should have been released as v0.5.0 already. Sorry!
 
 - Fix: Adjusted color for "All OK" output
 
