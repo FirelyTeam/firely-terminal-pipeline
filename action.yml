@@ -320,7 +320,7 @@ runs:
         ERROR=$'\033[0;31m'
         WARN=$'\033[0;33m'
         INFO=$'\033[0;34m'
-        OK=$'\033[0;34m'
+        OK=$'\033[0;32m'
         NC=$'\033[0m'
               
         if $INPUT_JAVA_VALIDATION_ENABLED; then
@@ -375,7 +375,7 @@ runs:
         ERROR=$'\033[0;31m'
         WARN=$'\033[0;33m'
         INFO=$'\033[0;34m'
-        OK=$'\033[0;34m'
+        OK=$'\033[0;32m'
         NC=$'\033[0m'
         
         if $INPUT_JAVA_VALIDATION_ENABLED; then 
