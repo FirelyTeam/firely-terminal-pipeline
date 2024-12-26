@@ -83,6 +83,12 @@ You can specify the following options using the ["with" syntax](https://docs.git
 
 ## Changelog
 
+### v0.5.0 - 2024-12-26
+
+This version is besides the fix mentioned below identical to v0.4.7. Due to the removed options, the last release should have been relased as v0.5.0 already. Sorry!
+
+- Fix: Adjusted color for "All OK" output
+
 ### v0.4.7 - 2024-12-26
 
 - Feature: Upgrade SUHSI to v3.13.1
