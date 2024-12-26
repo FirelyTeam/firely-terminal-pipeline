@@ -360,7 +360,7 @@ runs:
             javaValidatorOutput=$(echo "$javaValidatorOutput" | sed -E "s/(:[[:space:]]*)Error([[:space:]]+-)/\1${RED}Error${NC}\2/")
             
             if echo $INPUT_OUTPUT_FORMAT | grep -w -q RAW; then
-              echo "$javaValidatorOutput"
+              echo -e "$javaValidatorOutput"
             else
               SAVEIFS=$IFS 
               IFS=$'\n'
