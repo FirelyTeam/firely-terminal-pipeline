@@ -62,7 +62,9 @@ runs:
 
     - name: Conditional Step
     if: ${{ false }}
-    run: echo "This will not run"
+    run: |
+      echo "This will not run"
+    shell: bash
   
     # --------------------------------------------------------------------------------------------------- #
     #                                        FIRELY TERMINAL RESTORE                                      #
