@@ -455,7 +455,8 @@ runs:
             javaValidatorOutput=$(echo "$javaValidatorOutput" | sed -E "
               s/(:[[:space:]]*)Error([[:space:]]+-)/\1${ERROR}Error${NC}\2/g;
               s/(:[[:space:]]*)Warning([[:space:]]+-)/\1${WARN}Warning${NC}/g;
-              s/(:[[:space:]]*)Information([[:space:]]+-)/\1${INFO}Warning${NC}/g;
+              s/(:[[:space:]]*)Information([[:space:]]+-)/\1${INFO}Information${NC}/g;
+              s/(-[[:space:]]+)All OK/\1${OK}All OK${NC}/g
             ")
             echo -e "$javaValidatorOutput"
             
