@@ -59,6 +59,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+
+    - name: Conditional Step
+    if: ${{ false }}
+    run: echo "This will not run"
   
     # --------------------------------------------------------------------------------------------------- #
     #                                        FIRELY TERMINAL RESTORE                                      #
@@ -75,9 +79,6 @@ runs:
             exit 1
         fi
       shell: bash
-      env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         
     # Test Firely SDK version
     - name: Check .NET SDK Version
