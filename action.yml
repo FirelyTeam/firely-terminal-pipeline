@@ -423,8 +423,8 @@ runs:
       run: |
 
         # Define color codes
-        RED='\033[0;31m'
-        NC='\033[0m' # No Color
+        RED=$'\033[0;31m'
+        NC=$'\033[0m'
         
         if $INPUT_JAVA_VALIDATION_ENABLED; then 
           IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
@@ -449,7 +449,7 @@ runs:
               javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS)
             fi
 
-            javaValidatorOutput=$(echo "$javaValidatorOutput" | sed -E "s/(:[[:space:]]*)Error([[:space:]]+-)/\1${RED}Error${NC}\2/")
+            javaValidatorOutput=$(echo "$javaValidatorOutput" | sed -E "s/(:[[:space:]]*)Error([[:space:]]+-)/Test")
             echo -e "$javaValidatorOutput"
             
           done
