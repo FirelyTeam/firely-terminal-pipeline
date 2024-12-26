@@ -67,7 +67,7 @@ runs:
     # Firely.Terminal steps
     
     - name: Check if .NET is installed
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED || inputs.INPUT_SUSHI_ENABLED }}
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED == 'true' || inputs.SUSHI_ENABLED == 'true' }}
       run: |
         if ! command -v dotnet &> /dev/null
         then
