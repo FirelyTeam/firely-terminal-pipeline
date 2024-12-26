@@ -67,14 +67,13 @@ runs:
     # Firely.Terminal steps
     
     - name: Check if .NET is installed
-      run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+      if: ${{ inputs.DOTNET_VALIDATION_ENABLED || inputs.INPUT_SUSHI_ENABLED }}
+        run: |
           if ! command -v dotnet &> /dev/null
           then
               echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
               exit 1
           fi
-        fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
