@@ -423,8 +423,8 @@ runs:
       run: |
 
         # Define color codes
-        RED='\033[31m'
-        NC='\033[0m' # No Color
+        RED='\033[0;31m'
+        NC='\033[0m # No Color
         
         if $INPUT_JAVA_VALIDATION_ENABLED; then 
           IG_DEPENDENCIES=$(jq '.dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
