@@ -68,12 +68,12 @@ runs:
     
     - name: Check if .NET is installed
       if: ${{ inputs.DOTNET_VALIDATION_ENABLED || inputs.INPUT_SUSHI_ENABLED }}
-        run: |
-          if ! command -v dotnet &> /dev/null
-          then
-              echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
-              exit 1
-          fi
+      run: |
+        if ! command -v dotnet &> /dev/null
+        then
+            echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
+            exit 1
+        fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
