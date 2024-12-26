@@ -59,12 +59,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-
-    - name: Conditional Step
-      if: ${{ false }}
-      run: |
-        echo "This will not run"
-      shell: bash
   
     # --------------------------------------------------------------------------------------------------- #
     #                                        FIRELY TERMINAL RESTORE                                      #
@@ -73,21 +67,26 @@ runs:
     # Firely.Terminal steps
     
     - name: Check if .NET is installed
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED == 'true' || inputs.SUSHI_ENABLED == 'true' }}
       run: |
-        if ! command -v dotnet &> /dev/null
-        then
-            echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
-            exit 1
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+          if ! command -v dotnet &> /dev/null
+          then
+              echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
+              exit 1
+          fi
         fi
       shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         
     # Test Firely SDK version
     - name: Check .NET SDK Version
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED == 'true' || inputs.SUSHI_ENABLED == 'true' }}
       run: |
-        CHECK_DOTNET_VERSION=$(dotnet --version)
-        echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+          CHECK_DOTNET_VERSION=$(dotnet --version)
+          echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
+        fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
@@ -95,11 +94,12 @@ runs:
           
     # Install Firely.Terminal
     - name: Install Firely.Terminal
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED == 'true' || inputs.SUSHI_ENABLED == 'true' }}
       run: |
-        if ! command -v fhir &> /dev/null
-        then
-          dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+          if ! command -v fhir &> /dev/null
+          then
+            dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
+          fi
         fi
       shell: bash
       env:
@@ -109,10 +109,11 @@ runs:
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED == 'true' || inputs.SUSHI_ENABLED == 'true' }}
       run: |
-        CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
-        echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+         CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
+          echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
+        fi
       shell: bash
       env:
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
@@ -120,9 +121,10 @@ runs:
     
     # Simplifier Login
     - name: Simplifier login
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED == 'true' || inputs.SUSHI_ENABLED == 'true' }}
       run: |
+       if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
         fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
+       fi
       shell: bash
       env:
        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
@@ -132,44 +134,45 @@ runs:
        
     # Restore all dependencies listed in the package.json file (need to be on the root level)
     - name: FHIR Dependency restore
-      if: ${{ inputs.DOTNET_VALIDATION_ENABLED == 'true' || inputs.SUSHI_ENABLED == 'true' }}
       run: |
-        if [ ! -f "package.json" ]; then
-          echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
-          exit 1
-        fi
-          
-        fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
-        for fhirVersion in ${fhirVersions[@]}; do
-          fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index('\"$fhirVersion\"')')
-          if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
-            echo "Found FHIR version $fhirVersion in package.json"
-            if [[ "$fhirVersion" = "3.0.2" ]]; then
-              fhir spec R3
-              break
-            elif [[ "$fhirVersion" = "4.0.1" ]]; then
-              fhir spec R4
-              break
-            elif [[ "$fhirVersion" = "4.1.0" ]]; then
-              fhir spec R4B
-              break
-            elif [[ "$fhirVersion" = "4.6.0" ]]; then
-              fhir spec R5
-              break
-            else
-              echo "This FHIR version is currently not supported.";
-              exit 1
-            fi
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+          if [ ! -f "package.json" ]; then
+            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
+            exit 1
           fi
-        done
+          
+          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
+          for fhirVersion in ${fhirVersions[@]}; do
+            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index('\"$fhirVersion\"')')
+            if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
+              echo "Found FHIR version $fhirVersion in package.json"
+              if [[ "$fhirVersion" = "3.0.2" ]]; then
+                fhir spec R3
+                break
+              elif [[ "$fhirVersion" = "4.0.1" ]]; then
+                fhir spec R4
+                break
+              elif [[ "$fhirVersion" = "4.1.0" ]]; then
+                fhir spec R4B
+                break
+              elif [[ "$fhirVersion" = "4.6.0" ]]; then
+                fhir spec R5
+                break
+              else
+                echo "This FHIR version is currently not supported.";
+                exit 1
+              fi
+            fi
+          done
 
-        echo "Attempting to restore package dependencies based on package.json ..."
-        FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
-        if [[ "$FHIR_RESTORE" == *"Cannot restore"* ]]; then
-          echo $FHIR_RESTORE
-          exit 1
+          echo "Attempting to restore package dependencies based on package.json ..."
+          FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
+          if [[ "$FHIR_RESTORE" == *"Cannot restore"* ]]; then
+            echo $FHIR_RESTORE
+            exit 1
+          fi
+          echo "Restore of package.json was successful: $FHIR_RESTORE"
         fi
-        echo "Restore of package.json was successful: $FHIR_RESTORE"
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
