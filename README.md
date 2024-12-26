@@ -48,11 +48,9 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * EXPECTED_FAILS:
     -  description: Specify which steps in your validation workflow are expected to fail due to possible bugs in the validator(s). Allowed values: 'VALIDATION_CONFORMANCE_DOTNET', 'VALIDATION_CONFORMANCE_JAVA', 'VALIDATION_EXAMPLES_JAVA'
     -  required: false
-* OUTPUT_FORMAT:
-    - description: Specify the format of the validation output: Allowed values: 'RAW', 'SUMMARY' (produces a markdown compatible overview of all validation issues)
-    -  required: false
  * JAVA_VALIDATION_OPTIONS:
    - description: 'Custom options passed to the Java validator. See https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'
+   - default: '-output-style compact'
    - required: false
  * SIMPLIFIER_USERNAME:
    - description: 'Simplifier email address (not username), needed for running Quality Control checks. Please use GitHub Secrets for this variable.'
@@ -85,9 +83,18 @@ You can specify the following options using the ["with" syntax](https://docs.git
 
 ## Changelog
 
+### v0.4.7 - 2024-12-26
+
+- Feature: Upgrade SUHSI to v3.13.1
+- Feature: Upgrade Java validator to v6.5.2
+- Feature: Added JAVA_VALIDATOR_DOWNLOAD_LOCATION as an input variable to specify from where to download the Java validator .jar
+- Feature: Use '-output-style compact' as the default for JAVA_VALIDATION_OPTIONS. This enhances the readability of the log. It's recommended to include this in case JAVA_VALIDATION_OPTIONS get overridden by a local config
+- Feature: Use colors to highlight "Error", "Warning", "Information" messages in the output of the Java validator
+- Changed: Remove OUTPUT_FORMAT variable, use '-output-style compact' instead
+
 ### v0.4.6 - 2024-12-12
 
-- Feature: Upgrade Firely Terminal to v3.2.0
+- Feature: Upgrade Java validator to v6.5.0
 
 ### v0.4.5 - 2024-11-25
 
