@@ -201,15 +201,22 @@ runs:
           ztsTokenResponseCode=$(echo "$ztsTokenResponse" | tail -n 1)
 
           if [[ "$ztsTokenResponseCode" == 2* ]]; then
-              echo "Successfully retrieved a token for the ZTS to do download the terminology packgages. Response code: $ztsTokenResponseCode"
+              ztsAccessToken=$(echo "$ztsTokenResponseBody" | jq -r '.token')
+              if [[ "$ztsAccessToken" != "null" ]]; then
+                echo "Successfully retrieved a token for the ZTS to do download the terminology packgages. Response code: $ztsTokenResponseCode"
+              else
+                echo "Failed to retrieve a token for the ZTS to download the terminology packages. No token found in response."
+                exit 1
+              fi
           else
               echo "Failed to retrieve a token for the ZTS to download the terminology packages. Response code: $ztsTokenResponseCode"
               echo "Response body: $ztsTokenResponseBody"
               exit 1
           fi
 
+          echo "ZTS Token: $ztsAccessToken"
           echo registry=https://terminologien.bfarm.de/packages/ >> .npmrc
-          echo //terminologien.bfarm.de/packages/:_authToken=$ACCESS_TOKEN$ >> .npmrc
+          echo //terminologien.bfarm.de/packages/:_authToken=$ztsAccessToken$ >> .npmrc
 
           for package in "${ztsDependencies[@]}"; do
             npm --registry https://terminologien.bfarm.de/packages install $package
