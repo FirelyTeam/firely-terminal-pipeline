@@ -189,8 +189,26 @@ runs:
         if $INPUT_ZTS_ENABLED; then
           ztsDependencies=$(jq -r '.["zts-dependencies"] | keys[]?' package.json)
           if [[ -n "$ztsDependencies" ]]; then
-            packagesForToken=$(echo "$ztsDependencies" | jq -R . | jq -s '{packages: .}')
-            echo "$packagesForToken"
+            packagesForZtsToken=$(echo "$ztsDependencies" | jq -R . | jq -s '{packages: .}')
+            echo "$packagesForZtsToken"
+
+          ztsTokenResponse=$(curl -s -w "\n%{http_code}" \
+            -X POST https://terminologien.bfarm.de/api/generate-token \
+            -H "Content-Type: application/json" \
+            -d "$packagesForZtsToken")
+
+          ztsTokenResponseBody=$(echo "$ztsTokenResponse" | sed '$d')
+          ztsTokenResponseCode=$(echo "$ztsTokenResponse" | tail -n 1)
+
+          if [[ "$ztsTokenResponseCode" == 2* ]]; then
+              echo "Successfully retrieve a token for the ZTS to do download the terminology packgages. Response code: $response_code"
+              echo "Response body: $response_body"
+            else
+              echo "Failed to retrieve a token for the ZTS to download the terminology packages. Response code: $response_code"
+              echo "Response body: $response_body"
+              exit 1
+            fi
+            
           fi
         fi
       shell: bash
