@@ -222,7 +222,7 @@ runs:
                 https://terminologien.bfarm.de/packages/$packageName/$packageVersion \
                 -s -o "$packageFile" -w "%{http_code}")
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
-                tar -xzf packageFile
+                tar -xzf $packageFile
                 fhirCacheLocation=$(fhir cache location --path)
                 echo "fhirCacheLocation: $fhirCacheLocation"
               else
