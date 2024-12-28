@@ -217,12 +217,14 @@ runs:
               packageVersion="2025.0.0"
               echo "Trying to install terminology package '$packageName' in version '$packageVersion' from ZTS registry"
               
-              packageFile="${package_name}-${package_version}.tgz"
+              packageFile="${packageName}-${packageVersion}.tgz"
               packageDownloadResponseCode=$(curl -H "Authorization: Bearer $ztsAccessToken" \
                 https://terminologien.bfarm.de/packages/$packageName/$packageVersion \
                 -s -o "$packageFile" -w "%{http_code}")
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
-                echo "Download successful: $packageFile"
+                tar -xzf packageFile
+                fhirCacheLocation=$(fhir cache location --path)
+                echo "fhirCacheLocation: $fhirCacheLocation"
               else
                 echo "Failed to download terminology package '$packageName' in version '$packageVersion'."
                 [[ -e "$packageFile" ]] && rm "$packageFile"
