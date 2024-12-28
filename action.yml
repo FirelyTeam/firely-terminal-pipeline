@@ -398,7 +398,7 @@ runs:
               
         if $INPUT_JAVA_VALIDATION_ENABLED; then
           echo "Starting validation using Java validator (Conformance resources) ..."
-          IG_DEPENDENCIES=$(jq -r '.dependencies + .["zts-dependencies"] | to_entries | map("-ig " + .key + "#" + .value)' package.json)
+          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["zts-dependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
           echo "IG_DEPENDENCIES: $IG_DEPENDENCIES"
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
@@ -453,7 +453,7 @@ runs:
         NC=$'\033[0m'
         
         if $INPUT_JAVA_VALIDATION_ENABLED; then
-          IG_DEPENDENCIES=$(jq -r '(.dependencies // {} + .["zts-dependencies"] // {}) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["zts-dependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
           do  
             COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
