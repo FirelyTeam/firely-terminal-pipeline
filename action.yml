@@ -201,11 +201,11 @@ runs:
           ztsTokenResponseCode=$(echo "$ztsTokenResponse" | tail -n 1)
 
           if [[ "$ztsTokenResponseCode" == 2* ]]; then
-              echo "Successfully retrieve a token for the ZTS to do download the terminology packgages. Response code: $response_code"
-              echo "Response body: $response_body"
+              echo "Successfully retrieve a token for the ZTS to do download the terminology packgages. Response code: $ztsTokenResponseCode"
+              echo "Response body: $ztsTokenResponseBody"
             else
-              echo "Failed to retrieve a token for the ZTS to download the terminology packages. Response code: $response_code"
-              echo "Response body: $response_body"
+              echo "Failed to retrieve a token for the ZTS to download the terminology packages. Response code: $ztsTokenResponseCode"
+              echo "Response body: $ztsTokenResponseBody"
               exit 1
             fi
             
