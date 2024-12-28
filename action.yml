@@ -213,8 +213,10 @@ runs:
                 exit 1
             fi
 
-            for packageName in "${ztsDependencies[@]}"; do
-              packageVersion="2025.0.0"
+            ztsDependencyPairs=$(echo "$JSON" | jq -r '.["zts-dependencies"] | to_entries[] | "\(.key)=\(.value)"')
+            for ztsDependencyPair in $ztsDependencyPairs; do
+              packageName=${ztsDependencyPair%=*}
+              packageVersion=${ztsDependencyPair#*=}
               echo "Trying to install terminology package '$packageName' in version '$packageVersion' from ZTS registry"
               
               packageFile="${packageName}-${packageVersion}.tgz"
