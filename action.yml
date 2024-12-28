@@ -189,7 +189,7 @@ runs:
         if $INPUT_ZTS_ENABLED; then
           ztsDependencies=$(jq -r '.["zts-dependencies"] | keys[]?' package.json)
           if [[ -n "$ztsDependencies" ]]; then
-            packagesForToken=$(echo "$keys" | jq -R . | jq -s '{packages: .}')
+            packagesForToken=$(echo "$ztsDependencies" | jq -R . | jq -s '{packages: .}')
             echo "$packagesForToken"
           fi
         fi
