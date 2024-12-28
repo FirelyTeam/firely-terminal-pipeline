@@ -398,7 +398,7 @@ runs:
               
         if $INPUT_JAVA_VALIDATION_ENABLED; then
           echo "Starting validation using Java validator (Conformance resources) ..."
-          IG_DEPENDENCIES=$(jq '.dependencies + .zts-dependencies | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          IG_DEPENDENCIES=$(jq '.dependencies + .["zts-dependencies"] | to_entries | map("-ig " + .key + "#" + .value)' package.json)
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
           do  
