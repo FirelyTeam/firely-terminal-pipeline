@@ -219,6 +219,7 @@ runs:
           echo //terminologien.bfarm.de/packages/:_authToken=$ztsAccessToken$ >> .npmrc
 
           for package in "${ztsDependencies[@]}"; do
+            echo "Trying to install '$package' from ZTS registry"
             npm --registry https://terminologien.bfarm.de/packages install $package
           done
           
