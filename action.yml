@@ -225,10 +225,10 @@ runs:
                 tar -xzf $packageFile
                 extractedFolderForPackage="${packageFile%.tgz}"
                 mv package $extractedFolderForPackage
-                ls
                 fhirCacheLocation=$(fhir cache location --path)
-                extractedFolderForPackage="${packageFile%.tgz}"
                 mv "$extractedFolderForPackage" "$fhirCacheLocation"
+                rm "$packageFile"
+                ls
 
                 if [[ ! -d "$fhirCacheLocation/$extractedFolderForPackage" ]]; then
                   echo "Error: Failed to move $extractedFolderForPackage to $fhirCacheLocation"
