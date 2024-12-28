@@ -54,6 +54,10 @@ inputs:
     description: 'Version of SUSHI used for compiling the FSH files'
     default: '3.13.1'
     required: true
+  ZTS_ENABLED:
+    descrption: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
+    default: true
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -177,6 +181,21 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+
+    # ZTS (Central Terminology Server for Germany, terminologien.bfarm.de) package loading
+
+    - name: ZTS Package dependency restore
+      run: |
+        if $INPUT_ZTS_ENABLED; then
+          ztsDependencies=$(jq -r '.["zts-dependencies"] | keys[]?' package.json)
+          if [[ -n "$ztsDependencies" ]]; then
+            packagesForToken=$(echo "$keys" | jq -R . | jq -s '{packages: .}')
+            echo "$packagesForToken"
+          fi
+        fi
+      shell: bash
+      env:
+        INPUT_ZTS_ENABLED: ${{ inputs.ZTS_ENABLED }}
         
     # --------------------------------------------------------------------------------------------------- #
     #                                                 SUSHI                                               #
