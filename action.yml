@@ -202,13 +202,19 @@ runs:
 
           if [[ "$ztsTokenResponseCode" == 2* ]]; then
               echo "Successfully retrieve a token for the ZTS to do download the terminology packgages. Response code: $ztsTokenResponseCode"
-              echo "Response body: $ztsTokenResponseBody"
-            else
+          else
               echo "Failed to retrieve a token for the ZTS to download the terminology packages. Response code: $ztsTokenResponseCode"
               echo "Response body: $ztsTokenResponseBody"
               exit 1
-            fi
-            
+          fi
+
+          echo registry=https://terminologien.bfarm.de/packages/ >> .npmrc
+          echo //terminologien.bfarm.de/packages/:_authToken=$ACCESS_TOKEN$ >> .npmrc
+
+          for package in "${ztsDependencies[@]}"; do
+            echo "package to install: $package"
+          done
+          
           fi
         fi
       shell: bash
