@@ -228,12 +228,13 @@ runs:
                 fhirCacheLocation=$(fhir cache location --path)
                 mv "$extractedFolderForPackage" "$fhirCacheLocation"
                 rm "$packageFile"
-                ls
 
                 if [[ ! -d "$fhirCacheLocation/$extractedFolderForPackage" ]]; then
                   echo "Error: Failed to move $extractedFolderForPackage to $fhirCacheLocation"
                   exit 1
                 fi
+
+                echo "Successfully installed terminology package '$packageName' in version '$packageVersion' from ZTS registry"
                 
               else
                 echo "Failed to download terminology package '$packageName' in version '$packageVersion'."
