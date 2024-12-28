@@ -220,11 +220,11 @@ runs:
               packageFile="${package_name}-${package_version}.tgz"
               packageDownloadResponseCode=$(curl -H "Authorization: Bearer $ztsAccessToken" \
                 https://terminologien.bfarm.de/packages/$packageName/$packageVersion \
-                -s -o "$packageFile" -w "%{packageDownloadResponseCode}")
+                -s -o "$packageFile" -w "%{http_code}")
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
                 echo "Download successful: $packageFile"
               else
-                echo "Failed to download terminology package '$package' in version '$packageVersion'."
+                echo "Failed to download terminology package '$packageName' in version '$packageVersion'."
                 [[ -e "$packageFile" ]] && rm "$packageFile"
                 exit 1
               fi
