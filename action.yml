@@ -223,6 +223,8 @@ runs:
                 -s -o "$packageFile" -w "%{http_code}")
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
                 tar -xzf $packageFile
+                extractedFolderForPackage="${packageFile%.tgz}"
+                mv package $extractedFolderForPackage
                 ls
                 fhirCacheLocation=$(fhir cache location --path)
                 extractedFolderForPackage="${packageFile%.tgz}"
