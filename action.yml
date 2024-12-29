@@ -228,11 +228,12 @@ runs:
                 extractedFolderForPackage="${packageFile%.tgz}"
                 mv package $extractedFolderForPackage
                 fhirCacheLocation=$(fhir cache location --path)
-                mv "$extractedFolderForPackage" "$fhirCacheLocation"
+                fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
+                mv -i "$extractedFolderForPackage" "$fhirPackageCacheDest"
                 rm "$packageFile"
 
-                if [[ ! -d "$fhirCacheLocation/$extractedFolderForPackage" ]]; then
-                  echo "Error: Failed to move $extractedFolderForPackage to $fhirCacheLocation"
+                if [[ ! -d "$fhirPackageCacheDest" ]]; then
+                  echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
                   exit 1
                 fi
 
