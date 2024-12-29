@@ -223,14 +223,12 @@ runs:
               packageDownloadResponseCode=$(curl -H "Authorization: Bearer $ztsAccessToken" \
                 https://terminologien.bfarm.de/packages/$packageName/$packageVersion \
                 -s -o "$packageFile" -w "%{http_code}")
+                
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
-                tar -xzf $packageFile
-                extractedFolderForPackage="${packageFile%.tgz}"
-                mv package $extractedFolderForPackage
                 fhirCacheLocation=$(fhir cache location --path)
                 fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
-                mv -i "$extractedFolderForPackage" "$fhirPackageCacheDest"
-                rm "$packageFile"
+                mkdir -p $fhirPackageCacheDest
+                tar -xzf $packageFile -C $fhirPackageCacheDest
 
                 if [[ ! -d "$fhirPackageCacheDest" ]]; then
                   echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
