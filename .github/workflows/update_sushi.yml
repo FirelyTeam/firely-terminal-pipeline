@@ -1,0 +1,76 @@
+# This is a workflow to help to update the [SUSHI](https://github.com/FHIR/sushi) dependency automatically 
+
+name: Update SUSHI (Cron Job)
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  check-java-validator-updates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          mkdir -p ~/bin
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O ~/bin/yq
+          chmod +x ~/bin/yq
+          echo "~/bin" >> $GITHUB_PATH
+
+      - name: Extract with default version of SUHSI from the GH action
+        run: |
+          SUSHI_VERSION=$(yq '.inputs.SUSHI_VERSION.default' action.yml)
+          echo "SUSHI_VERSION: '$SUSHI_VERSION'"
+          echo "SUSHI_VERSION=$SUSHI_VERSION" >> $GITHUB_ENV
+
+      - name: Extract with latest release version of SUSHI
+        run: |
+          LATEST_RELEASE=$(wget -qO- https://api.github.com/repos/FHIR/sushi/releases/latest | jq -r '.tag_name')
+          echo "LATEST_RELEASE: '$LATEST_RELEASE'"
+          echo "LATEST_RELEASE=$LATEST_RELEASE" >> $GITHUB_ENV
+
+      - name: Compare versions of SUSHI
+        run: |
+          if dpkg --compare-versions "$SUSHI_VERSION" lt "$LATEST_RELEASE"; then
+            echo "Found outdated version of SUSHI, update recommended."
+            SUSHI_UDPATE_RECOMMENDED="true"
+            echo "SUSHI_UDPATE_RECOMMENDED=$SUSHI_UDPATE_RECOMMENDED" >> $GITHUB_ENV
+          elif dpkg --compare-versions "$SUSHI_VERSION" gt "$LATEST_RELEASE"; then
+            echo "Unexpected version of SUSHI found, it appears to be higher than the latest release version."
+            exit 1
+          else
+            SUSHI_UDPATE_RECOMMENDED="false"
+            echo "SUSHI_UDPATE_RECOMMENDED=$SUSHI_UDPATE_RECOMMENDED" >> $GITHUB_ENV
+            echo "SUSHI is up-to-date."
+          fi
+
+      - name: Create patch for SUSHI version in action.yml
+        run: |
+          if [[ "$SUSHI_UDPATE_RECOMMENDED" == "false" ]]; then
+            echo "SUSHI is up-to-date. Skip creating a PR."
+            exit 0
+          fi
+          
+          BRANCH_NAME="update-sushi-version-$LATEST_RELEASE"
+          REMOTE_REPO="https://github.com/FirelyTeam/firely-terminal-pipeline.git"
+          if git ls-remote --heads "$REMOTE_REPO" "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
+            echo "Branch '$BRANCH_NAME' already exists. Skipping creation of PR."
+            exit 0
+          fi
+          
+          git checkout -b "$BRANCH_NAME"
+          sed -i "/SUSHI_VERSION:/,/default:/s/\(default: \).*/\1'$LATEST_RELEASE'/" action.yml
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add action.yml
+          git commit -m "Update JAVA_VALIDATOR_VERSION to $LATEST_RELEASE"
+          git push -u origin "$BRANCH_NAME"
+          gh pr create --base main --head "$BRANCH_NAME" --title "Update SUSHI_VERSION to $LATEST_RELEASE" --body "This PR updates the SUSHI_VERSION to $LATEST_RELEASE."
+        env:
+          GH_TOKEN: ${{ github.token }}
