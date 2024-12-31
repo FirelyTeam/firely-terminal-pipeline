@@ -18,9 +18,10 @@ jobs:
 
       - name: Install yq
         run: |
-          sudo apt-get install -y jq
-          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
-          chmod +x /usr/bin/yq
+          mkdir -p ~/bin
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O ~/bin/yq
+          chmod +x ~/bin/yq
+          echo "~/bin" >> $GITHUB_PATH
 
       - name: Extract with default version of Java validator
         run: |
