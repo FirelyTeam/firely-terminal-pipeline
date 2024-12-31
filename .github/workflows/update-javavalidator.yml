@@ -16,12 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Install yq
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          sudo apt-get install -y jq
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          chmod +x /usr/bin/yq
+
+      - name: Extract with default version of Java validator
+        run: |
+          JAVA_VALIDATOR_VERSION=$(yq '.inputs.JAVA_VALIDATOR_VERSION.default' .github/workflows/firely_config.yaml)
+          echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
