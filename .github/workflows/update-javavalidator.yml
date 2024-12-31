@@ -53,6 +53,8 @@ jobs:
           branchName="update-java-validator-version-$LATEST_RELEASE"
           git checkout -b "update-java-validator-version-$branchName"
           yq -i ".inputs.JAVA_VALIDATOR_VERSION.default = \"$NEW_VERSION\"" action.yml
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git add action.yml
           git commit -m "Update JAVA_VALIDATOR_VERSION to $LATEST_RELEASE"
           git push -u origin "$branchName"
