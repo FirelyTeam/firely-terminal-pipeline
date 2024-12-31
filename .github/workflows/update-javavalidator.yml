@@ -50,6 +50,10 @@ jobs:
 
       - name: Create patch for Java validator version in action.yml
         run: |
+          if ! $JAVA_UPDATE_RECOMMENDED; then
+            exit 0
+          fi
+          
           BRANCH_NAME="update-java-validator-version-$LATEST_RELEASE"
           REMOTE_REPO="https://github.com/FirelyTeam/firely-terminal-pipeline.git"
           if git ls-remote --heads "$REMOTE_REPO" "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
