@@ -39,9 +39,21 @@ jobs:
         run: |
           if dpkg --compare-versions "$JAVA_VALIDATOR_VERSION" lt "$LATEST_RELEASE"; then
             echo "Found outdated version of Java validator, update recommended."
+            JAVA_UDPATE_RECOMMENDED=true
+            echo "JAVA_UDPATE_RECOMMENDED=$JAVA_UDPATE_RECOMMENDED" >> $GITHUB_ENV
           elif dpkg --compare-versions "$VERSION1" gt "$VERSION2"; then
             echo "Unexpected version of Java validator found, it appears to be higher than the latest release version."
             exit 1
           else
             echo "Java validator is up-to-date."
           fi
+
+      - name: Create patch for Java validator version in action.yml
+        run: |
+          branchName="update-java-validator-version-$LATEST_RELEASE"
+          git checkout -b "update-java-validator-version-$branchName"
+          yq -i ".inputs.JAVA_VALIDATOR_VERSION.default = \"$NEW_VERSION\"" action.yml
+          git add action.yml
+          git commit -m "Update JAVA_VALIDATOR_VERSION to $LATEST_RELEASE"
+          git push -u origin "$branchName"
+          gh pr create --base main --head "$BRANCH_NAME" --title "Update JAVA_VALIDATOR_VERSION to $LATEST_RELEASE" --body "This PR updates the JAVA_VALIDATOR_VERSION to $LATEST_RELEASE."
