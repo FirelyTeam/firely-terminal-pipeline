@@ -23,7 +23,25 @@ jobs:
           chmod +x ~/bin/yq
           echo "~/bin" >> $GITHUB_PATH
 
-      - name: Extract with default version of Java validator
+      - name: Extract with default version of the Java validator from the GH action
         run: |
           JAVA_VALIDATOR_VERSION=$(yq '.inputs.JAVA_VALIDATOR_VERSION.default' action.yml)
-          echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
+          echo "JAVA_VALIDATOR_VERSION: '$JAVA_VALIDATOR_VERSION'"
+          echo "JAVA_VALIDATOR_VERSION" >> $GITHUB_ENV
+
+      - name: Extract with latest release version of Java validator
+        run: |
+          LATEST_RELEASE=$(wget -qO- https://api.github.com/repos/hapifhir/org.hl7.fhir.core/releases/latest | jq -r '.tag_name')
+          echo "LATEST_RELEASE: '$LATEST_RELEASE'"
+          echo "LATEST_RELEASE" >> $GITHUB_ENV
+
+      - name: Compare versions of Java validator
+        run: |
+          if dpkg --compare-versions "$JAVA_VALIDATOR_VERSION" lt "$LATEST_RELEASE"; then
+            echo "Found outdated version of Java validator, update recommended."
+          elif dpkg --compare-versions "$VERSION1" gt "$VERSION2"; then
+            echo "Unexpected version of Java validator found, it appears to be higher than the latest release version."
+            exit 1
+          else
+            echo "Java validator is up-to-date."
+          fi
