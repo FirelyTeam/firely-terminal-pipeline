@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-java-validator-updates:
+  check-firely-terminal-updates:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
       - name: Extract with default version of Firely Terminal from the GH action
         run: |
           FIRELY_TERMINAL_VERSION=$(yq '.inputs.FIRELY_TERMINAL_VERSION.default' action.yml)
-          echo "FIRELY_TERMINAL_VERSION: '$SUSHI_VERSION'"
+          echo "FIRELY_TERMINAL_VERSION: '$FIRELY_TERMINAL_VERSION'"
           echo "FIRELY_TERMINAL_VERSION=$FIRELY_TERMINAL_VERSION" >> $GITHUB_ENV
 
       - name: Extract with latest release version of Firely Terminal
