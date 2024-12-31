@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-java-validator-updates:
+  check-sushi-updates:
     runs-on: ubuntu-latest
 
     steps:
