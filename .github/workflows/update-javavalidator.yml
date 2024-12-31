@@ -59,3 +59,5 @@ jobs:
           git commit -m "Update JAVA_VALIDATOR_VERSION to $LATEST_RELEASE"
           git push -u origin "$branchName"
           gh pr create --base main --head "$branchName" --title "Update JAVA_VALIDATOR_VERSION to $LATEST_RELEASE" --body "This PR updates the JAVA_VALIDATOR_VERSION to $LATEST_RELEASE."
+        env:
+          GH_TOKEN: ${{ github.token }}
