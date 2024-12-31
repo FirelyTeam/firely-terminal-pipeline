@@ -25,5 +25,5 @@ jobs:
 
       - name: Extract with default version of Java validator
         run: |
-          JAVA_VALIDATOR_VERSION=$(yq '.inputs.JAVA_VALIDATOR_VERSION.default' .github/workflows/action.yml)
+          JAVA_VALIDATOR_VERSION=$(yq '.inputs.JAVA_VALIDATOR_VERSION.default' action.yml)
           echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
