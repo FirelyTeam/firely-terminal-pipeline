@@ -51,6 +51,7 @@ jobs:
       - name: Create patch for Java validator version in action.yml
         run: |
           if ! $JAVA_UPDATE_RECOMMENDED; then
+            echo "Java validator is up-to-date. Skip creating a PR."
             exit 0
           fi
           
