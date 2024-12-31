@@ -1,6 +1,5 @@
 name: Firely.Terminal (GitHub Actions)
 description: Run Firely.Terminal and the offical FHIR Java Validator in a GitHub Actions pipeline
-
 inputs:
   PATH_TO_CONFORMANCE_RESOURCES:
     description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem)'
@@ -45,7 +44,7 @@ inputs:
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.5.1'
+    default: '6.5.2'
     required: true
   JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
@@ -58,18 +57,15 @@ inputs:
     descrption: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
     default: true
     required: false
-
 # Validate all resources using Firely Terminal 
 runs:
   using: "composite"
   steps:
-  
     # --------------------------------------------------------------------------------------------------- #
     #                                        FIRELY TERMINAL RESTORE                                      #
     # --------------------------------------------------------------------------------------------------- #
-  
+
     # Firely.Terminal steps
-    
     - name: Check if .NET is installed
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
@@ -83,7 +79,6 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        
     # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
@@ -95,7 +90,6 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-          
     # Install Firely.Terminal
     - name: Install Firely.Terminal
       run: |
@@ -107,10 +101,9 @@ runs:
         fi
       shell: bash
       env:
-       FIRELY_TERMINAL_VERSION: ${{ inputs.FIRELY_TERMINAL_VERSION }}
-       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-      
+        FIRELY_TERMINAL_VERSION: ${{ inputs.FIRELY_TERMINAL_VERSION }}
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
@@ -120,140 +113,36 @@ runs:
         fi
       shell: bash
       env:
-       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-    
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
     # Simplifier Login
     - name: Simplifier login
       run: |
-       if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
-        fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
-       fi
-      shell: bash
-      env:
-       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-       INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
-       INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
-       
-    # Restore all dependencies listed in the package.json file (need to be on the root level)
-    - name: FHIR Dependency restore
-      run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
-          if [ ! -f "package.json" ]; then
-            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
-            exit 1
-          fi
-          
-          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
-          for fhirVersion in ${fhirVersions[@]}; do
-            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index('\"$fhirVersion\"')')
-            if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
-              echo "Found FHIR version $fhirVersion in package.json"
-              if [[ "$fhirVersion" = "3.0.2" ]]; then
-                fhir spec R3
-                break
-              elif [[ "$fhirVersion" = "4.0.1" ]]; then
-                fhir spec R4
-                break
-              elif [[ "$fhirVersion" = "4.1.0" ]]; then
-                fhir spec R4B
-                break
-              elif [[ "$fhirVersion" = "4.6.0" ]]; then
-                fhir spec R5
-                break
-              else
-                echo "This FHIR version is currently not supported.";
-                exit 1
-              fi
-            fi
-          done
-
-          echo "Attempting to restore package dependencies based on package.json ..."
-          FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
-          if [[ "$FHIR_RESTORE" == *"Cannot restore"* ]]; then
-            echo $FHIR_RESTORE
-            exit 1
-          fi
-          echo "Restore of package.json was successful: $FHIR_RESTORE"
+         fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
         fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-
+        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
+        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
+    # Restore all dependencies listed in the package.json file (need to be on the root level)
+    - name: FHIR Dependency restore
+      run: "if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then\n  if [ ! -f \"package.json\" ]; then\n    echo \"package.json does not exist. Please add it to the root folder and add all project dependencies.\"\n    exit 1\n  fi\n  \n  fhirVersions=(\"3.0.2\" \"4.0.1\" \"4.1.0\" \"4.6.0\")\n  for fhirVersion in ${fhirVersions[@]}; do\n    fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index('\\\"$fhirVersion\\\"')')\n    if [[ ! \"$fhirVersionFoundInPackageJson\" = null ]]; then\n      echo \"Found FHIR version $fhirVersion in package.json\"\n      if [[ \"$fhirVersion\" = \"3.0.2\" ]]; then\n        fhir spec R3\n        break\n      elif [[ \"$fhirVersion\" = \"4.0.1\" ]]; then\n        fhir spec R4\n        break\n      elif [[ \"$fhirVersion\" = \"4.1.0\" ]]; then\n        fhir spec R4B\n        break\n      elif [[ \"$fhirVersion\" = \"4.6.0\" ]]; then\n        fhir spec R5\n        break\n      else\n        echo \"This FHIR version is currently not supported.\";\n        exit 1\n      fi\n    fi\n  done\n\n  echo \"Attempting to restore package dependencies based on package.json ...\"\n  FHIR_RESTORE=$((fhir restore | tr '\\n' ' ')|| true)  # Print everything in a single line\n  if [[ \"$FHIR_RESTORE\" == *\"Cannot restore\"* ]]; then\n    echo $FHIR_RESTORE\n    exit 1\n  fi\n  echo \"Restore of package.json was successful: $FHIR_RESTORE\"\nfi\n"
+      shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
     # ZTS (Central Terminology Server for Germany, terminologien.bfarm.de) package loading
-
     - name: ZTS Package dependency restore
-      run: |
-        if $INPUT_ZTS_ENABLED; then
-          ztsDependencies=$(jq -r '.["zts-dependencies"] | keys[]?' package.json)
-          if [[ -n "$ztsDependencies" ]]; then
-            packagesForZtsToken=$(echo "$ztsDependencies" | jq -R . | jq -s '{packages: .}')
-          
-            ztsTokenResponse=$(curl -s -w "\n%{http_code}" \
-              -X POST https://terminologien.bfarm.de/api/generate-token \
-              -H "Content-Type: application/json" \
-              -d "$packagesForZtsToken")
-
-            ztsTokenResponseBody=$(echo "$ztsTokenResponse" | sed '$d')
-            ztsTokenResponseCode=$(echo "$ztsTokenResponse" | tail -n 1)
-
-            if [[ "$ztsTokenResponseCode" == 2* ]]; then
-                ztsAccessToken=$(echo "$ztsTokenResponseBody" | jq -r '.token')
-                if [[ "$ztsAccessToken" != "null" ]]; then
-                  echo "Successfully retrieved a token for the ZTS to do download the terminology packgages. Response code: $ztsTokenResponseCode"
-                else
-                  echo "Failed to retrieve a token for the ZTS to download the terminology packages. No token found in response."
-                  exit 1
-                fi
-            else
-                echo "Failed to retrieve a token for the ZTS to download the terminology packages. Response code: $ztsTokenResponseCode"
-                echo "Response body: $ztsTokenResponseBody"
-                exit 1
-            fi
-
-            ztsDependencyPairs=$(jq -r '.["zts-dependencies"] | to_entries[] | "\(.key)=\(.value)"' package.json)
-            for ztsDependencyPair in $ztsDependencyPairs; do
-              packageName=${ztsDependencyPair%=*}
-              packageVersion=${ztsDependencyPair#*=}
-              echo "Trying to install terminology package '$packageName' in version '$packageVersion' from ZTS registry"
-              
-              packageFile="${packageName}-${packageVersion}.tgz"
-              packageDownloadResponseCode=$(curl -H "Authorization: Bearer $ztsAccessToken" \
-                https://terminologien.bfarm.de/packages/$packageName/$packageVersion \
-                -s -o "$packageFile" -w "%{http_code}")
-                
-              if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
-                fhirCacheLocation=$(fhir cache location --path)
-                fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
-                mkdir -p $fhirPackageCacheDest
-                tar -xzf $packageFile -C $fhirPackageCacheDest
-
-                if [[ ! -d "$fhirPackageCacheDest" ]]; then
-                  echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
-                  exit 1
-                fi
-
-                echo "Successfully installed terminology package '$packageName' in version '$packageVersion' from ZTS registry"
-                
-              else
-                echo "Failed to download terminology package '$packageName' in version '$packageVersion'."
-                [[ -e "$packageFile" ]] && rm "$packageFile"
-                exit 1
-              fi
-            done
-          
-          fi
-        fi
+      run: "if $INPUT_ZTS_ENABLED; then\n  ztsDependencies=$(jq -r '.[\"zts-dependencies\"] | keys[]?' package.json)\n  if [[ -n \"$ztsDependencies\" ]]; then\n    packagesForZtsToken=$(echo \"$ztsDependencies\" | jq -R . | jq -s '{packages: .}')\n  \n    ztsTokenResponse=$(curl -s -w \"\\n%{http_code}\" \\\n      -X POST https://terminologien.bfarm.de/api/generate-token \\\n      -H \"Content-Type: application/json\" \\\n      -d \"$packagesForZtsToken\")\n\n    ztsTokenResponseBody=$(echo \"$ztsTokenResponse\" | sed '$d')\n    ztsTokenResponseCode=$(echo \"$ztsTokenResponse\" | tail -n 1)\n\n    if [[ \"$ztsTokenResponseCode\" == 2* ]]; then\n        ztsAccessToken=$(echo \"$ztsTokenResponseBody\" | jq -r '.token')\n        if [[ \"$ztsAccessToken\" != \"null\" ]]; then\n          echo \"Successfully retrieved a token for the ZTS to do download the terminology packgages. Response code: $ztsTokenResponseCode\"\n        else\n          echo \"Failed to retrieve a token for the ZTS to download the terminology packages. No token found in response.\"\n          exit 1\n        fi\n    else\n        echo \"Failed to retrieve a token for the ZTS to download the terminology packages. Response code: $ztsTokenResponseCode\"\n        echo \"Response body: $ztsTokenResponseBody\"\n        exit 1\n    fi\n\n    ztsDependencyPairs=$(jq -r '.[\"zts-dependencies\"] | to_entries[] | \"\\(.key)=\\(.value)\"' package.json)\n    for ztsDependencyPair in $ztsDependencyPairs; do\n      packageName=${ztsDependencyPair%=*}\n      packageVersion=${ztsDependencyPair#*=}\n      echo \"Trying to install terminology package '$packageName' in version '$packageVersion' from ZTS registry\"\n      \n      packageFile=\"${packageName}-${packageVersion}.tgz\"\n      packageDownloadResponseCode=$(curl -H \"Authorization: Bearer $ztsAccessToken\" \\\n        https://terminologien.bfarm.de/packages/$packageName/$packageVersion \\\n        -s -o \"$packageFile\" -w \"%{http_code}\")\n        \n      if [[ \"$packageDownloadResponseCode\" == 2* && -s \"$packageFile\" ]]; then\n        fhirCacheLocation=$(fhir cache location --path)\n        fhirPackageCacheDest=\"${fhirCacheLocation}/${packageName}#${packageVersion}\"\n        mkdir -p $fhirPackageCacheDest\n        tar -xzf $packageFile -C $fhirPackageCacheDest\n\n        if [[ ! -d \"$fhirPackageCacheDest\" ]]; then\n          echo \"Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest\"\n          exit 1\n        fi\n\n        echo \"Successfully installed terminology package '$packageName' in version '$packageVersion' from ZTS registry\"\n        \n      else\n        echo \"Failed to download terminology package '$packageName' in version '$packageVersion'.\"\n        [[ -e \"$packageFile\" ]] && rm \"$packageFile\"\n        exit 1\n      fi\n    done\n  \n  fi\nfi\n"
       shell: bash
       env:
         INPUT_ZTS_ENABLED: ${{ inputs.ZTS_ENABLED }}
-        
     # --------------------------------------------------------------------------------------------------- #
     #                                                 SUSHI                                               #
     # --------------------------------------------------------------------------------------------------- #
-    
     - name: Check if npm is installed
       run: |
         if $INPUT_SUSHI_ENABLED; then
@@ -265,8 +154,7 @@ runs:
         fi
       shell: bash
       env:
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-       
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
     - name: Check npm Version
       run: |
         if $INPUT_SUSHI_ENABLED; then
@@ -276,7 +164,6 @@ runs:
       shell: bash
       env:
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        
     - name: Install fsh-sushi
       run: |
         if $INPUT_SUSHI_ENABLED; then
@@ -287,7 +174,6 @@ runs:
       env:
         SUSHI_VERSION: ${{ inputs.SUSHI_VERSION }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        
     - name: Check SUSHI version
       run: |
         if $INPUT_SUSHI_ENABLED; then
@@ -296,7 +182,6 @@ runs:
       shell: bash
       env:
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        
     - name: Generate conformance resources with SUSHI
       run: |
         if $INPUT_SUSHI_ENABLED; then
@@ -306,11 +191,10 @@ runs:
       env:
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         INPUT_SUSHI_OPTIONS: ${{ inputs.SUSHI_OPTIONS }}
-        
     # --------------------------------------------------------------------------------------------------- #
     #                                            .NET VALIDATOR                                           #
     # --------------------------------------------------------------------------------------------------- #
-                
+
     # Run Quality Control checks incl. validation
     - name: Run Quality Control checks
       run: |
@@ -327,7 +211,6 @@ runs:
         INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_PATH_TO_QUALITY_CONTROL_RULES: ${{ inputs.PATH_TO_QUALITY_CONTROL_RULES }}
-        
     - name: Report Success - .NET Validator
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
@@ -336,15 +219,13 @@ runs:
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-      
     #Examples are currently not used as Firely Terminal can't differentiate between these two in QC checks.
-    
+
     # --------------------------------------------------------------------------------------------------- #
     #                                            JAVA Validator                                           #
     # --------------------------------------------------------------------------------------------------- #
-    
+
     # Offical HL7 Java validator steps
-    
     - name: Check if Java is installed
       run: |
         if $INPUT_JAVA_VALIDATION_ENABLED; then
@@ -357,138 +238,34 @@ runs:
       shell: bash
       env:
         INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-    
     - name: Download Java Validator
-      run: |
-        if $INPUT_JAVA_VALIDATION_ENABLED; then
-          CHECK_JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'"' -f2)
-          echo "JAVA_VERSION: $CHECK_JAVA_VERSION"
-          echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
-          JAVA_VALIDATOR_DOWNLOAD_LOCATION=$(eval echo "$JAVA_VALIDATOR_DOWNLOAD_LOCATION")
-          echo "JAVA_VALIDATOR_DOWNLOAD_LOCATION: $JAVA_VALIDATOR_DOWNLOAD_LOCATION"
-          
-          wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION -O validator_cli.jar
-        fi
+      run: "if $INPUT_JAVA_VALIDATION_ENABLED; then\n  CHECK_JAVA_VERSION=$(java -version 2>&1 | head -1 | cut -d'\"' -f2)\n  echo \"JAVA_VERSION: $CHECK_JAVA_VERSION\"\n  echo \"JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION\"\n  JAVA_VALIDATOR_DOWNLOAD_LOCATION=$(eval echo \"$JAVA_VALIDATOR_DOWNLOAD_LOCATION\")\n  echo \"JAVA_VALIDATOR_DOWNLOAD_LOCATION: $JAVA_VALIDATOR_DOWNLOAD_LOCATION\"\n  \n  wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION -O validator_cli.jar\nfi\n"
       shell: bash
       env:
-       JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
-       JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
-       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-      
+        JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
+        JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
     - name: Install jq
-      run: |
-        if $INPUT_JAVA_VALIDATION_ENABLED; then 
-          sudo apt-get update > /dev/null
-          sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
-        fi
+      run: "if $INPUT_JAVA_VALIDATION_ENABLED; then \n  sudo apt-get update > /dev/null\n  sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null\nfi\n"
       shell: bash
       env:
-       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-          
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
     - name: Validate all conformance resources in scope of the repository
-      run: |
-
-        # Define color codes
-        ERROR=$'\033[0;31m'
-        WARN=$'\033[0;33m'
-        INFO=$'\033[0;34m'
-        OK=$'\033[0;32m'
-        NC=$'\033[0m'
-              
-        if $INPUT_JAVA_VALIDATION_ENABLED; then
-          echo "Starting validation using Java validator (Conformance resources) ..."
-          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["zts-dependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
-          echo "IG_DEPENDENCIES: $IG_DEPENDENCIES"
-          
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
-          do  
-            LOCAL_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
-          done
-          
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; 
-          do
-          
-            # Ensure directory ends with "/"
-            if [[ ! "$p" =~ .*/$ ]]; then
-              p="$p/"
-            fi
-            
-            UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
-            
-            if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS|| true)
-            else
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS)
-            fi
-
-            javaValidatorOutput=$(echo "$javaValidatorOutput" | sed -E "
-              s/(:[[:space:]]*)Error([[:space:]]+-)/\1${ERROR}Error${NC}\2/g;
-              s/(:[[:space:]]*)Warning([[:space:]]+-)/\1${WARN}Warning${NC}\2/g;
-              s/(:[[:space:]]*)Information([[:space:]]+-)/\1${INFO}Information${NC}\2/g;
-              s/(-[[:space:]]+)All OK/\1${OK}All OK${NC}/g
-            ")
-
-            echo -e "$javaValidatorOutput"
-            
-          done
-        fi
-        echo "Finished validation using Java validator (Conformance resources) ..."
+      run: "\n# Define color codes\nERROR=$'\\033[0;31m'\nWARN=$'\\033[0;33m'\nINFO=$'\\033[0;34m'\nOK=$'\\033[0;32m'\nNC=$'\\033[0m'\n      \nif $INPUT_JAVA_VALIDATION_ENABLED; then\n  echo \"Starting validation using Java validator (Conformance resources) ...\"\n  IG_DEPENDENCIES=$(jq -r '(.dependencies + .[\"zts-dependencies\"]) | to_entries | map(\"-ig \" + .key + \"#\" + .value) | join(\" \")' package.json)\n  echo \"IG_DEPENDENCIES: $IG_DEPENDENCIES\"\n  \n  for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation\n  do  \n    LOCAL_IG_PARAMETERS+=\"-ig $GITHUB_WORKSPACE/$p \"\n  done\n  \n  for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; \n  do\n  \n    # Ensure directory ends with \"/\"\n    if [[ ! \"$p\" =~ .*/$ ]]; then\n      p=\"$p/\"\n    fi\n    \n    UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '\"')\n    \n    if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_JAVA; then\n      javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS|| true)\n    else\n      javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $LOCAL_IG_PARAMETERS)\n    fi\n\n    javaValidatorOutput=$(echo \"$javaValidatorOutput\" | sed -E \"\n      s/(:[[:space:]]*)Error([[:space:]]+-)/\\1${ERROR}Error${NC}\\2/g;\n      s/(:[[:space:]]*)Warning([[:space:]]+-)/\\1${WARN}Warning${NC}\\2/g;\n      s/(:[[:space:]]*)Information([[:space:]]+-)/\\1${INFO}Information${NC}\\2/g;\n      s/(-[[:space:]]+)All OK/\\1${OK}All OK${NC}/g\n    \")\n\n    echo -e \"$javaValidatorOutput\"\n    \n  done\nfi\necho \"Finished validation using Java validator (Conformance resources) ...\"\n"
       shell: bash
       env:
-       FHIR_VERSION: "4.0"
-       INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
-       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-       INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
-       INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
-        
+        FHIR_VERSION: "4.0"
+        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
+        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
     - name: Validate all example resources in scope of the repository
-      run: |
-
-        # Define color codes
-        ERROR=$'\033[0;31m'
-        WARN=$'\033[0;33m'
-        INFO=$'\033[0;34m'
-        OK=$'\033[0;32m'
-        NC=$'\033[0m'
-        
-        if $INPUT_JAVA_VALIDATION_ENABLED; then
-          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["zts-dependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
-          for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
-          do  
-            COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
-          done
-          
-          for p in $PATH_TO_EXAMPLES; 
-          do
-            
-            # Ensure directory ends with "/"
-            if [[ ! "$p" =~ .*/$ ]]; then
-              p="$p/"
-            fi
-          
-            UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '"')
-            
-            if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_EXAMPLES_JAVA; then
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true)
-            else
-              javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS)
-            fi
-
-            javaValidatorOutput=$(echo "$javaValidatorOutput" | sed -E "
-              s/(:[[:space:]]*)Error([[:space:]]+-)/\1${ERROR}Error${NC}\2/g;
-              s/(:[[:space:]]*)Warning([[:space:]]+-)/\1${WARN}Warning${NC}\2/g;
-              s/(:[[:space:]]*)Information([[:space:]]+-)/\1${INFO}Information${NC}\2/g;
-              s/(-[[:space:]]+)All OK/\1${OK}All OK${NC}/g
-            ")
-            echo -e "$javaValidatorOutput"
-            
-          done
-        fi
+      run: "\n# Define color codes\nERROR=$'\\033[0;31m'\nWARN=$'\\033[0;33m'\nINFO=$'\\033[0;34m'\nOK=$'\\033[0;32m'\nNC=$'\\033[0m'\n\nif $INPUT_JAVA_VALIDATION_ENABLED; then\n  IG_DEPENDENCIES=$(jq -r '(.dependencies + .[\"zts-dependencies\"]) | to_entries | map(\"-ig \" + .key + \"#\" + .value) | join(\" \")' package.json)\n  for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources\n  do  \n    COMBINED_IG_PARAMETERS+=\"-ig $GITHUB_WORKSPACE/$p \"\n  done\n  \n  for p in $PATH_TO_EXAMPLES; \n  do\n    \n    # Ensure directory ends with \"/\"\n    if [[ ! \"$p\" =~ .*/$ ]]; then\n      p=\"$p/\"\n    fi\n  \n    UNESCPAED_IG_DEPENDENCIES=$(echo $IG_DEPENDENCIES | tr -d '\"')\n    \n    if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_EXAMPLES_JAVA; then\n      javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS || true)\n    else\n      javaValidatorOutput=$(java -jar validator_cli.jar $GITHUB_WORKSPACE/$p*.xml $GITHUB_WORKSPACE/$p*.json -version $FHIR_VERSION $INPUT_JAVA_VALIDATION_OPTIONS $UNESCPAED_IG_DEPENDENCIES $COMBINED_IG_PARAMETERS)\n    fi\n\n    javaValidatorOutput=$(echo \"$javaValidatorOutput\" | sed -E \"\n      s/(:[[:space:]]*)Error([[:space:]]+-)/\\1${ERROR}Error${NC}\\2/g;\n      s/(:[[:space:]]*)Warning([[:space:]]+-)/\\1${WARN}Warning${NC}\\2/g;\n      s/(:[[:space:]]*)Information([[:space:]]+-)/\\1${INFO}Information${NC}\\2/g;\n      s/(-[[:space:]]+)All OK/\\1${OK}All OK${NC}/g\n    \")\n    echo -e \"$javaValidatorOutput\"\n    \n  done\nfi\n"
       shell: bash
       env:
-       INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
-       PATH_TO_EXAMPLES: ${{ inputs.PATH_TO_EXAMPLES }}
-       FHIR_VERSION: "4.0"
-       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-       INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
-       INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
+        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
+        PATH_TO_EXAMPLES: ${{ inputs.PATH_TO_EXAMPLES }}
+        FHIR_VERSION: "4.0"
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
+        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
