@@ -1,0 +1,27 @@
+# This is a workflow to help to update the [FHIR Java Validator](https://github.com/hapifhir/org.hl7.fhir.core) dependency automatically 
+
+name: Update FHIR Java validator (Cron Job)
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+
+  workflow_dispatch:
+
+jobs:
+  check-java-validator-updates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
