@@ -32,6 +32,7 @@ jobs:
       - name: Extract with latest release version of SUSHI
         run: |
           LATEST_RELEASE=$(wget -qO- https://api.github.com/repos/FHIR/sushi/releases/latest | jq -r '.tag_name')
+          LATEST_RELEASE=${LATEST_RELEASE#v}
           echo "LATEST_RELEASE: '$LATEST_RELEASE'"
           echo "LATEST_RELEASE=$LATEST_RELEASE" >> $GITHUB_ENV
 
