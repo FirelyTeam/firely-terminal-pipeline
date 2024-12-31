@@ -41,7 +41,7 @@ jobs:
             echo "Found outdated version of Java validator, update recommended."
             JAVA_UPDATE_RECOMMENDED="true"
             echo "JAVA_UPDATE_RECOMMENDED=$JAVA_UPDATE_RECOMMENDED" >> $GITHUB_ENV
-          elif dpkg --compare-versions "$VERSION1" gt "$VERSION2"; then
+          elif dpkg --compare-versions "$JAVA_VALIDATOR_VERSION" gt "$LATEST_RELEASE"; then
             echo "Unexpected version of Java validator found, it appears to be higher than the latest release version."
             exit 1
           else
