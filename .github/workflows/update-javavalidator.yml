@@ -46,6 +46,7 @@ jobs:
             exit 1
           else
             JAVA_UDPATE_RECOMMENDED="false"
+            echo "JAVA_UDPATE_RECOMMENDED=$JAVA_UDPATE_RECOMMENDED" >> $GITHUB_ENV
             echo "Java validator is up-to-date."
           fi
 
