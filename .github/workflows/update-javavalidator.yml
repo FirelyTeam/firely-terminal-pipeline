@@ -45,6 +45,7 @@ jobs:
             echo "Unexpected version of Java validator found, it appears to be higher than the latest release version."
             exit 1
           else
+            JAVA_UDPATE_RECOMMENDED="false"
             echo "Java validator is up-to-date."
           fi
 
