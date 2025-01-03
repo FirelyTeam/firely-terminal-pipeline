@@ -56,7 +56,7 @@ inputs:
     required: true
   ZTS_ENABLED:
     descrption: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
-    default: true
+    default: false
     required: false
 
 # Validate all resources using Firely Terminal 
