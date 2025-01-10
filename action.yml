@@ -356,7 +356,8 @@ runs:
           rm -rf $fhirCacheLocation
         fi
       shell: bash
-      INPUT_JAVA_SNAPSHOT_ENABLED: ${{ inputs.JAVA_SNAPSHOT_ENABLED }}
+      env:
+        INPUT_JAVA_SNAPSHOT_ENABLED: ${{ inputs.JAVA_SNAPSHOT_ENABLED }}
     
     - name: Check if Java is installed
       run: |
