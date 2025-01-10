@@ -349,7 +349,7 @@ runs:
     
     # Offical HL7 Java validator steps
 
-    - name: Check if Java is installed
+    - name: Remove package cache to enable the Java  validator to create snapshots
       run: |
         if $INPUT_JAVA_SNAPSHOT_ENABLED; then
           fhirCacheLocation=$(fhir cache location --path)
