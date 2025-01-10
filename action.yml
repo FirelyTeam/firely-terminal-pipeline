@@ -344,12 +344,6 @@ runs:
     # --------------------------------------------------------------------------------------------------- #
     
     # Offical HL7 Java validator steps
-
-    - name: Check if Java is installed
-      run: |
-        fhirCacheLocation=$(fhir cache location --path)
-        rm -rf $fhirCacheLocation
-      shell: bash
     
     - name: Check if Java is installed
       run: |
