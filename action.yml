@@ -58,7 +58,7 @@ inputs:
     descrption: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
     default: false
     required: false
-  INPUT_JAVA_SNAPSHOT_ENABLED:
+  JAVA_SNAPSHOT_ENABLED:
     description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
     default: false
     required: false
