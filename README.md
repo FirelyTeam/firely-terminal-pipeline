@@ -85,7 +85,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
 
 ### v0.6.0 - 2025-01-01
 
-- Feature: Upgrade SUHSI to v3.14.0
+- Feature: Upgrade SUSHI to v3.14.0
 
 ### v0.5.0 - 2024-12-26
 
@@ -95,7 +95,7 @@ This version is beside the fix mentioned below identical to v0.4.7. Due to the p
 
 ### v0.4.7 - 2024-12-26
 
-- Feature: Upgrade SUHSI to v3.13.1
+- Feature: Upgrade SUSHI to v3.13.1
 - Feature: Upgrade Java validator to v6.5.2
 - Feature: Added JAVA_VALIDATOR_DOWNLOAD_LOCATION as an input variable to specify from where to download the Java validator .jar
 - Feature: Use '-output-style compact' as the default for JAVA_VALIDATION_OPTIONS. This enhances the readability of the log. It's recommended to include this in case JAVA_VALIDATION_OPTIONS get overridden by a local config
@@ -114,24 +114,24 @@ Hotfix for v0.4.4 which accidentally increased the SUSHI version to v3.12.2 whic
 
 - Feature: Upgrade Firely Terminal to v3.3.2
 - Feature: Upgrade Java validator to v6.4.4
-- Feature: Upgrade SUHSI to v3.12.2
+- Feature: Upgrade SUSHI to v3.12.2
 
 ### v0.4.3 - 2024-10-18
 
 - Feature: Upgrade Firely Terminal to v3.2.0
 - Feature: Upgrade Java validator to v6.3.32
-- Feature: Upgrade SUHSI to v3.12.0
+- Feature: Upgrade SUSHI to v3.12.0
 
 ### v0.4.2 - 2024-06-05
 
 - Feature: Upgrade Java validator to v6.3.14
-- Feature: Upgrade SUHSI to v3.11.0
+- Feature: Upgrade SUSHI to v3.11.0
 
 ### v0.4.1 - 2024-03-18
 
 - Feature: Upgrade Firely Terminal to v3.1.0
 - Feature: Upgrade Java validator to v6.3.1
-- Feature: Upgrade SUHSI to v3.8.0
+- Feature: Upgrade SUSHI to v3.8.0
 
 ### v0.4.0 - 2023-02-20
 
@@ -146,7 +146,7 @@ Hotfix for v0.4.4 which accidentally increased the SUSHI version to v3.12.2 whic
 - Feature: Add FIRELY_TERMINAL_VERSION, JAVA_VALIDATOR_VERSION, SUSHI_VERSION as options
 - Feature: Upgrade Firely Terminal to v3.0.0
 - Feature: Upgrade Java validator to v5.6.65
-- Feature: Upgrade SUHSI to v2.7.0
+- Feature: Upgrade SUSHI to v2.7.0
 
 ### v0.3.4 - 2022-06-01
 
