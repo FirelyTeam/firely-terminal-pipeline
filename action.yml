@@ -54,7 +54,7 @@ inputs:
     description: 'Version of SUSHI used for compiling the FSH files'
     default: '3.16.0'
     required: true
-  ZTS_ENABLED:
+  TERMINOLOGY_SERVICE_BFARM_ENABLED:
     descrption: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
     default: false
     required: false
@@ -191,10 +191,10 @@ runs:
 
     - name: ZTS Package dependency restore
       run: |
-        if $INPUT_ZTS_ENABLED; then
-          ztsDependencies=$(jq -r '.["zts-dependencies"] | keys[]?' package.json)
-          if [[ -n "$ztsDependencies" ]]; then
-            packagesForZtsToken=$(echo "$ztsDependencies" | jq -R . | jq -s '{packages: .}')
+        if $TERMINOLOGY_SERVICE_BFARM_ENABLED; then
+          devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
+          if [[ -n "$devDependencies" ]]; then
+            packagesForZtsToken=$(echo "$devDependencies" | jq -R . | jq -s '{packages: .}')
           
             ztsTokenResponse=$(curl -s -w "\n%{http_code}" \
               -X POST https://terminologien.bfarm.de/api/generate-token \
@@ -218,7 +218,7 @@ runs:
                 exit 1
             fi
 
-            ztsDependencyPairs=$(jq -r '.["zts-dependencies"] | to_entries[] | "\(.key)=\(.value)"' package.json)
+            ztsDependencyPairs=$(jq -r '.["devDependencies"] | to_entries[] | "\(.key)=\(.value)"' package.json)
             for ztsDependencyPair in $ztsDependencyPairs; do
               packageName=${ztsDependencyPair%=*}
               packageVersion=${ztsDependencyPair#*=}
@@ -253,7 +253,7 @@ runs:
         fi
       shell: bash
       env:
-        INPUT_ZTS_ENABLED: ${{ inputs.ZTS_ENABLED }}
+        INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED: ${{ inputs.TERMINOLOGY_SERVICE_BFARM_ENABLED }}
         
     # --------------------------------------------------------------------------------------------------- #
     #                                                 SUSHI                                               #
