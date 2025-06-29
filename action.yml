@@ -191,10 +191,27 @@ runs:
 
     - name: ZTS Package dependency restore
       run: |
-        if $TERMINOLOGY_SERVICE_BFARM_ENABLED; then
-          devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
+        if $TERMINOLOGY_SERVICE_BFARM_ENABLED; then            
           if [[ -n "$devDependencies" ]]; then
-            packagesForZtsToken=$(echo "$devDependencies" | jq -R . | jq -s '{packages: .}')
+
+            devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
+            validPackages=()
+            
+            for packageName in $devDependencies; do
+              echo "Checking if '$packageName' exists on ZTS server..."
+              catalogResponse=$(curl -s "https://terminologien.bfarm.de/packages/catalog?name=${packageName}")
+              if [[ "$catalogResponse" != "[]" ]]; then
+                validPackages+=("\"$packageName\"")
+              else
+                echo "Not found in ZTS catalog: $packageName — skipping"
+              fi
+            done
+
+            if [[ ${#validPackages[@]} -eq 0 ]]; then
+              exit 0
+            fi
+
+            packagesForZtsToken="{\"packages\": [$(IFS=,; echo "${validPackages[*]}")]}"
           
             ztsTokenResponse=$(curl -s -w "\n%{http_code}" \
               -X POST https://terminologien.bfarm.de/api/generate-token \
