@@ -192,11 +192,9 @@ runs:
     - name: ZTS Package dependency restore
       run: |
         if $TERMINOLOGY_SERVICE_BFARM_ENABLED; then            
+          devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
           if [[ -n "$devDependencies" ]]; then
-
-            devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
             validPackages=()
-            
             for packageName in $devDependencies; do
               echo "Checking if '$packageName' exists on ZTS server..."
               catalogResponse=$(curl -s "https://terminologien.bfarm.de/packages/catalog?name=${packageName}")
