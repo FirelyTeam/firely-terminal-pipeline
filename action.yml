@@ -231,9 +231,12 @@ runs:
                 
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
                 fhirCacheLocation=$(fhir cache location --path)
+                echo "fhirCacheLocation: '$fhirCacheLocation'"
                 fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
                 mkdir -p $fhirPackageCacheDest
                 tar -xzf $packageFile -C $fhirPackageCacheDest
+
+                ls -l $fhirPackageCacheDest
 
                 if [[ ! -d "$fhirPackageCacheDest" ]]; then
                   echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
