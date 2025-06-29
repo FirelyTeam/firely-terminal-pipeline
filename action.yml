@@ -235,9 +235,11 @@ runs:
                 fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
                 echo "fhirPackageCacheDest: '$fhirPackageCacheDest'"
                 mkdir -p $fhirPackageCacheDest
-                tar -xzf $packageFile -C $fhirPackageCacheDest --strip-components=1
+                tar -xzf $packageFile -C $fhirPackageCacheDest
 
-                ls -l $fhirPackageCacheDest
+                ls -l $fhirCacheLocation
+                echo "Test"
+                ls -l $fhirCacheLocation/package/
 
                 if [[ ! -d "$fhirPackageCacheDest" ]]; then
                   echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
