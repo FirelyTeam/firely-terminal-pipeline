@@ -237,9 +237,10 @@ runs:
                 mkdir -p $fhirPackageCacheDest
                 tar -xzf $packageFile -C $fhirPackageCacheDest
 
+                echo "Show package cache:"
                 ls -l $fhirCacheLocation
-                echo "Test"
-                ls -l $fhirCacheLocation/package/
+                echo "Show package content:"
+                ls -l $fhirCacheLocation/$packageName#$packageVersion/package/
 
                 if [[ ! -d "$fhirPackageCacheDest" ]]; then
                   echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
@@ -418,7 +419,7 @@ runs:
               
         if $INPUT_JAVA_VALIDATION_ENABLED; then
           echo "Starting validation using Java validator (Conformance resources) ..."
-          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["zts-dependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["devDependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
           echo "IG_DEPENDENCIES: $IG_DEPENDENCIES"
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
