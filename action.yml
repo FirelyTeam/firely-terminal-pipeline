@@ -233,6 +233,7 @@ runs:
                 fhirCacheLocation=$(fhir cache location --path)
                 echo "fhirCacheLocation: '$fhirCacheLocation'"
                 fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
+                echo "fhirPackageCacheDest: '$fhirPackageCacheDest'"
                 mkdir -p $fhirPackageCacheDest
                 tar -xzf $packageFile -C $fhirPackageCacheDest
 
