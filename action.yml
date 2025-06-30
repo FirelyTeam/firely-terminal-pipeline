@@ -191,7 +191,7 @@ runs:
 
     - name: ZTS Package dependency restore
       run: |
-        if $TERMINOLOGY_SERVICE_BFARM_ENABLED; then            
+        if [[ "$INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED" == "true" ]]; then        
           devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
           if [[ -n "$devDependencies" ]]; then
             validPackages=()
