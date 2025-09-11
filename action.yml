@@ -52,7 +52,7 @@ inputs:
     default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
-    default: '3.16.3'
+    default: '3.16.4'
     required: true
   TERMINOLOGY_SERVICE_BFARM_ENABLED:
     descrption: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
