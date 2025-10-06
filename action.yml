@@ -141,37 +141,48 @@ runs:
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
        
     # Restore all dependencies listed in the package.json file (need to be on the root level)
-    - name: FHIR Dependency restore
+    - name: Detect FHIR version and restore dependencies
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
           if [ ! -f "package.json" ]; then
             echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
             exit 1
           fi
-          
+
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -y > /dev/null
+            sudo apt-get install --no-install-recommends -y jq > /dev/null
+          fi
+
           fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
+          detectedFhirVersion=""
           for fhirVersion in ${fhirVersions[@]}; do
-            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index('\"$fhirVersion\"')')
+            fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
             if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
               echo "Found FHIR version $fhirVersion in package.json"
+              detectedFhirVersion="$fhirVersion"
               if [[ "$fhirVersion" = "3.0.2" ]]; then
                 fhir spec R3
-                break
               elif [[ "$fhirVersion" = "4.0.1" ]]; then
                 fhir spec R4
-                break
               elif [[ "$fhirVersion" = "4.1.0" ]]; then
                 fhir spec R4B
-                break
               elif [[ "$fhirVersion" = "4.6.0" ]]; then
                 fhir spec R5
-                break
               else
-                echo "This FHIR version is currently not supported.";
+                echo "This FHIR version is currently not supported."
                 exit 1
               fi
+              break
             fi
           done
+
+          if [[ -z "$detectedFhirVersion" ]]; then
+            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json.fhirVersions"
+            exit 1
+          fi
+          echo "Detected FHIR version: $detectedFhirVersion"
+          echo "FHIR_VERSION=$detectedFhirVersion" >> "$GITHUB_ENV"
 
           echo "Attempting to restore package dependencies based on package.json ..."
           fhir config regenerate on
@@ -186,6 +197,8 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+
 
     # ZTS (Central Terminology Server for Germany, terminologien.bfarm.de) package loading
 
@@ -465,7 +478,7 @@ runs:
         echo "Finished validation using Java validator (Conformance resources) ..."
       shell: bash
       env:
-       FHIR_VERSION: "4.0"
+       FHIR_VERSION: ${{ env.FHIR_VERSION }}
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
@@ -516,9 +529,9 @@ runs:
         fi
       shell: bash
       env:
+       FHIR_VERSION: ${{ env.FHIR_VERSION }}
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        PATH_TO_EXAMPLES: ${{ inputs.PATH_TO_EXAMPLES }}
-       FHIR_VERSION: "4.0"
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
