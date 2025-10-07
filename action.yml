@@ -168,10 +168,9 @@ runs:
                 fhir spec R5
                 break
               else
-                echo "This FHIR version is currently not supported."
+                echo "This FHIR version is currently not supported.";
                 exit 1
               fi
-              break
             fi
           done
 
