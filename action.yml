@@ -2,7 +2,7 @@ name: Firely.Terminal (GitHub Actions)
 description: Run Firely.Terminal and the offical FHIR Java Validator in a GitHub Actions pipeline
 
 inputs:
-  PATH_TO_CONFORMANCE_RESOURCES
+  PATH_TO_CONFORMANCE_RESOURCES:
     description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem)'
     required: true
   PATH_TO_EXAMPLES:
