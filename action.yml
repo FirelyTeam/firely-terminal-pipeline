@@ -157,12 +157,16 @@ runs:
               echo "Found FHIR version $fhirVersion in package.json"
               if [[ "$fhirVersion" = "3.0.2" ]]; then
                 fhir spec R3
+                break
               elif [[ "$fhirVersion" = "4.0.1" ]]; then
                 fhir spec R4
+                break
               elif [[ "$fhirVersion" = "4.1.0" ]]; then
                 fhir spec R4B
+                break
               elif [[ "$fhirVersion" = "4.6.0" ]]; then
                 fhir spec R5
+                break
               else
                 echo "This FHIR version is currently not supported."
                 exit 1
@@ -172,7 +176,7 @@ runs:
           done
 
           if [[ -z "$fhirVersion" ]]; then
-            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json.fhirVersions"
+            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json (.fhirVersions)"
             exit 1
           fi
           echo "Detected FHIR version: $fhirVersion"
