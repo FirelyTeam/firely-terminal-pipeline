@@ -2,7 +2,11 @@ name: Firely.Terminal (GitHub Actions)
 description: Run Firely.Terminal and the offical FHIR Java Validator in a GitHub Actions pipeline
 
 inputs:
-  PATH_TO_CONFORMANCE_RESOURCES:
+           fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
+          fhirVersion=""
+          for fhirVersion in ${fhirVersions[@]}; do
+            fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
+            if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; thenH_TO_CONFORMANCE_RESOURCES:
     description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem)'
     required: true
   PATH_TO_EXAMPLES:
@@ -140,37 +144,21 @@ runs:
        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
        
-    # Restore all dependencies listed in the package.json file (need to be on the root level)
-    - name: Detect FHIR version and restore dependencies
+    # Detect FHIR version from package.json
+    - name: Detect FHIR version
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
           if [ ! -f "package.json" ]; then
             echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
             exit 1
           fi
-
+          
           fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
-          fhirVersion=""
           for fhirVersion in ${fhirVersions[@]}; do
-            fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
+            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index('\"$fhirVersion\"')')
             if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
               echo "Found FHIR version $fhirVersion in package.json"
-              if [[ "$fhirVersion" = "3.0.2" ]]; then
-                fhir spec R3
-                break
-              elif [[ "$fhirVersion" = "4.0.1" ]]; then
-                fhir spec R4
-                break
-              elif [[ "$fhirVersion" = "4.1.0" ]]; then
-                fhir spec R4B
-                break
-              elif [[ "$fhirVersion" = "4.6.0" ]]; then
-                fhir spec R5
-                break
-              else
-                echo "This FHIR version is currently not supported.";
-                exit 1
-              fi
+              break
             fi
           done
 
@@ -180,7 +168,30 @@ runs:
           fi
           echo "Detected FHIR version: $fhirVersion"
           echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
-
+        fi
+      shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+        
+    # Set Firely Terminal FHIR specification and restore dependencies
+    - name: Set FHIR specification and restore dependencies
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
+          if [[ "$FHIR_VERSION" = "3.0.2" ]]; then
+            fhir spec R3
+          elif [[ "$FHIR_VERSION" = "4.0.1" ]]; then
+            fhir spec R4
+          elif [[ "$FHIR_VERSION" = "4.1.0" ]]; then
+            fhir spec R4B
+          elif [[ "$FHIR_VERSION" = "4.6.0" ]]; then
+            fhir spec R5
+          else
+            echo "This FHIR version is currently not supported."
+            exit 1
+          fi
+          
           echo "Attempting to restore package dependencies based on package.json ..."
           fhir config regenerate on
           FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
@@ -194,11 +205,10 @@ runs:
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+        FHIR_VERSION: ${{ env.FHIR_VERSION }}
 
 
     # ZTS (Central Terminology Server for Germany, terminologien.bfarm.de) package loading
-
     - name: ZTS Package dependency restore
       run: |
         if [[ "$INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED" == "true" ]]; then        
