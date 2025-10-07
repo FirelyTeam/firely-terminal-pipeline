@@ -2,12 +2,7 @@ name: Firely.Terminal (GitHub Actions)
 description: Run Firely.Terminal and the offical FHIR Java Validator in a GitHub Actions pipeline
 
 inputs:
-           fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
-          fhirVersion=""
-          for fhirVersion in ${fhirVersions[@]}; do
-            fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
-            if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; thenH_TO_CONFORMANCE_RESOURCES:
-    description: 'Relative paths of the folder(s) containing FHIR Conformance resources (StructureDefinition, ValueSet, CodeSystem)'
+  PATH_TO_CONFORMANCE_RESOURCES
     required: true
   PATH_TO_EXAMPLES:
     description: 'Relative paths of the folder(s) containing examples for the FHIR Conformance resources defined by the project'
