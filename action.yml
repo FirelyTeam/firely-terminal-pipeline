@@ -149,18 +149,12 @@ runs:
             exit 1
           fi
 
-          if ! command -v jq &> /dev/null; then
-            sudo apt-get update -y > /dev/null
-            sudo apt-get install --no-install-recommends -y jq > /dev/null
-          fi
-
           fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
-          detectedFhirVersion=""
+          fhirVersion=""
           for fhirVersion in ${fhirVersions[@]}; do
             fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
             if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
               echo "Found FHIR version $fhirVersion in package.json"
-              detectedFhirVersion="$fhirVersion"
               if [[ "$fhirVersion" = "3.0.2" ]]; then
                 fhir spec R3
               elif [[ "$fhirVersion" = "4.0.1" ]]; then
@@ -177,12 +171,12 @@ runs:
             fi
           done
 
-          if [[ -z "$detectedFhirVersion" ]]; then
+          if [[ -z "$fhirVersion" ]]; then
             echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json.fhirVersions"
             exit 1
           fi
-          echo "Detected FHIR version: $detectedFhirVersion"
-          echo "FHIR_VERSION=$detectedFhirVersion" >> "$GITHUB_ENV"
+          echo "Detected FHIR version: $fhirVersion"
+          echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
 
           echo "Attempting to restore package dependencies based on package.json ..."
           fhir config regenerate on
