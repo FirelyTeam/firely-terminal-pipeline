@@ -62,6 +62,10 @@ inputs:
     description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
     default: false
     required: false
+  FIRELY_TERMINAL_VALIDATOR_ENGINE:
+    description: 'Firely Terminal validator engine to use for .NET validation. Available options: Regular, Advanced'
+    default: 'Regular'
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -346,7 +350,19 @@ runs:
     # --------------------------------------------------------------------------------------------------- #
     #                                            .NET VALIDATOR                                           #
     # --------------------------------------------------------------------------------------------------- #
-                
+
+    # Set Firely Terminal validator engine
+    - name: Configure Firely Terminal validator engine
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          echo "Setting Firely Terminal validator engine to: $FIRELY_TERMINAL_VALIDATOR_ENGINE"
+          fhir config validator $FIRELY_TERMINAL_VALIDATOR_ENGINE
+        fi
+      shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        FIRELY_TERMINAL_VALIDATOR_ENGINE: ${{ inputs.FIRELY_TERMINAL_VALIDATOR_ENGINE }}
+
     # Run Quality Control checks incl. validation
     - name: Run Quality Control checks
       run: |
