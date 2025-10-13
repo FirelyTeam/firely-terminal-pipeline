@@ -146,17 +146,31 @@ runs:
     # Set Firely Terminal FHIR specification and restore dependencies
     - name: Set FHIR specification and restore dependencies
       run: |
-        if [[ "$FHIR_VERSION" = "3.0.2" ]]; then
-          fhir spec R3
-        elif [[ "$FHIR_VERSION" = "4.0.1" ]]; then
-          fhir spec R4
-        elif [[ "$FHIR_VERSION" = "4.1.0" ]]; then
-          fhir spec R4B
-        elif [[ "$FHIR_VERSION" = "4.6.0" ]]; then
-          fhir spec R5
-        else
-          echo "This FHIR version is currently not supported."
-          exit 1
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+          echo "Setting up Firely Terminal for .NET validation and/or SUSHI..."
+          if [[ "$FHIR_VERSION" = "3.0.2" ]]; then
+            fhir spec R3
+          elif [[ "$FHIR_VERSION" = "4.0.1" ]]; then
+            fhir spec R4
+          elif [[ "$FHIR_VERSION" = "4.1.0" ]]; then
+            fhir spec R4B
+          elif [[ "$FHIR_VERSION" = "4.6.0" ]]; then
+            fhir spec R5
+          else
+            echo "This FHIR version is currently not supported."
+            exit 1
+          fi
+          
+          echo "Attempting to restore package dependencies based on package.json ..."
+          fhir config regenerate on
+          FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
+          if [[ "$FHIR_RESTORE" == *"Cannot restore"* ]]; then
+            echo $FHIR_RESTORE
+            exit 1
+          fi
+          echo "Restore of package.json was successful: $FHIR_RESTORE"
+        elif $INPUT_JAVA_VALIDATION_ENABLED; then
+          echo "Only Java validation enabled - skipping Firely Terminal package restore (Java validator will handle dependencies)"
         fi
         
         echo "Attempting to restore package dependencies based on package.json ..."
