@@ -80,105 +80,78 @@ runs:
     
     - name: Check if .NET is installed
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
-          if ! command -v dotnet &> /dev/null
-          then
-              echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
-              exit 1
-          fi
+        if ! command -v dotnet &> /dev/null
+        then
+            echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
+            exit 1
         fi
       shell: bash
-      env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         
     # Test Firely SDK version
     - name: Check .NET SDK Version
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
-          CHECK_DOTNET_VERSION=$(dotnet --version)
-          echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
-        fi
+        CHECK_DOTNET_VERSION=$(dotnet --version)
+        echo "DOTNET_VERSION: $CHECK_DOTNET_VERSION"
       shell: bash
-      env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
           
     # Install Firely.Terminal
     - name: Install Firely.Terminal
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
-          if ! command -v fhir &> /dev/null
-          then
-            dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
-          fi
+        if ! command -v fhir &> /dev/null
+        then
+          dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
         fi
       shell: bash
       env:
        FIRELY_TERMINAL_VERSION: ${{ inputs.FIRELY_TERMINAL_VERSION }}
-       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
-         CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
-          echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
-        fi
+        CHECK_FIRELY_TERMINAL_VERSION=$(fhir -v | tr '\n' ' ') # Print everything in a single line
+        echo "FIRELY_TERMINAL_VERSION: $CHECK_FIRELY_TERMINAL_VERSION"
       shell: bash
-      env:
-       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
     
     # Simplifier Login
     - name: Simplifier login
       run: |
-       if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
         fhir login email=$INPUT_SIMPLIFIER_USERNAME password=$INPUT_SIMPLIFIER_PASSWORD
-       fi
       shell: bash
       env:
-       INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-       INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
        INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
        INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
        
     # Detect FHIR version from package.json
     - name: Detect FHIR version
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
-          if [ ! -f "package.json" ]; then
-            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
-            exit 1
-          fi
-          
-          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
-          for fhirVersion in ${fhirVersions[@]}; do
-            fhirVersionFoundInPackageJson=$(cat package.json | jq '.fhirVersions | index('\"$fhirVersion\"')')
-            if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
-              echo "Found FHIR version $fhirVersion in package.json"
-              break
-            fi
-          done
-
-          if [[ -z "$fhirVersion" ]]; then
-            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json (.fhirVersions)"
-            exit 1
-          fi
-          echo "Detected FHIR version: $fhirVersion"
-          echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
+        if [ ! -f "package.json" ]; then
+          echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
+          exit 1
         fi
+        
+        fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
+        fhirVersion=""
+        for fhirVersion in ${fhirVersions[@]}; do
+          fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
+          if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
+            echo "Found FHIR version $fhirVersion in package.json"
+            break
+          fi
+        done
+
+        if [[ -z "$fhirVersion" ]]; then
+          echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json (.fhirVersions)"
+          exit 1
+        fi
+        echo "Detected FHIR version: $fhirVersion"
+        echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
       shell: bash
-      env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
         
     # Set Firely Terminal FHIR specification and restore dependencies
     - name: Set FHIR specification and restore dependencies
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_SUSHI_ENABLED; then
+          echo "Setting up Firely Terminal for .NET validation and/or SUSHI..."
           if [[ "$FHIR_VERSION" = "3.0.2" ]]; then
             fhir spec R3
           elif [[ "$FHIR_VERSION" = "4.0.1" ]]; then
@@ -200,11 +173,20 @@ runs:
             exit 1
           fi
           echo "Restore of package.json was successful: $FHIR_RESTORE"
+        elif $INPUT_JAVA_VALIDATION_ENABLED; then
+          echo "Only Java validation enabled - skipping Firely Terminal package restore (Java validator will handle dependencies)"
         fi
+        
+        echo "Attempting to restore package dependencies based on package.json ..."
+        fhir config regenerate on
+        FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
+        if [[ "$FHIR_RESTORE" == *"Cannot restore"* ]]; then
+          echo $FHIR_RESTORE
+          exit 1
+        fi
+        echo "Restore of package.json was successful: $FHIR_RESTORE"
       shell: bash
       env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         FHIR_VERSION: ${{ env.FHIR_VERSION }}
 
 
