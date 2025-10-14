@@ -69,10 +69,6 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - description: 'Version of Firely Terminal used for .NET-based validation'
    - default: '3.3.2'
    - required: true
- * FIRELY_TERMINAL_VALIDATOR_ENGINE:
-   - description: 'Firely Terminal validator engine to use for .NET validation. Available options: Regular, Advanced'
-   - default: 'Advanced'
-   - required: false
  * JAVA_VALIDATOR_VERSION:
    - description: 'Version of org.hl7.fhir.core library used for Java-based validation'
    - default: '6.5.2'
