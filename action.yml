@@ -39,6 +39,10 @@ inputs:
   SUSHI_OPTIONS:
     description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
     required: false
+  SUSHI_USE_CONFIG_DEPENDENCIES:
+    description: 'When SUSHI is enabled, use dependencies from sushi-config.yaml instead of package.json. If sushi-config.yaml exists and package.json does not, this will automatically convert sushi-config.yaml to package.json.'
+    required: false
+    default: true
   FIRELY_TERMINAL_VERSION:
     description: 'Version of Firely Terminal used for .NET-based validation'
     default: '3.5.0-beta-1'
@@ -281,6 +285,67 @@ runs:
       shell: bash
       env:
         INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED: ${{ inputs.TERMINOLOGY_SERVICE_BFARM_ENABLED }}
+        
+    # --------------------------------------------------------------------------------------------------- #
+    #                                        SUSHI CONFIG CONVERSION                                      #
+    # --------------------------------------------------------------------------------------------------- #
+    
+    - name: Install yq for YAML processing
+      run: |
+        if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
+          if [ -f "sushi-config.yaml" ] && [ ! -f "package.json" ]; then
+            sudo apt-get update > /dev/null
+            sudo apt-get install --no-install-recommends -y yq > /dev/null
+          fi
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
+    
+    - name: Convert sushi-config.yaml to package.json
+      run: |
+        if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
+          if [ -f "sushi-config.yaml" ] && [ ! -f "package.json" ]; then
+            echo "Converting sushi-config.yaml to package.json..."
+            
+            # Extract FHIR version
+            fhirVersion=$(yq eval '.fhirVersion' sushi-config.yaml)
+            
+            # Extract dependencies (if they exist)
+            dependencies=""
+            if yq eval '.dependencies' sushi-config.yaml | grep -q ":"; then
+              dependencies=$(yq eval '.dependencies | to_entries | map("\"" + .key + "\": \"" + .value + "\"") | join(", ")' sushi-config.yaml)
+            fi
+            
+            # Create package.json
+            cat > package.json << EOF
+        {
+          "name": "sushi-generated-project",
+          "version": "1.0.0", 
+          "description": "Generated from sushi-config.yaml",
+          "fhirVersions": [
+            "$fhirVersion"
+          ],
+          "dependencies": {
+            $dependencies
+          }
+        }
+        EOF
+            echo "Successfully created package.json from sushi-config.yaml"
+          elif [ -f "sushi-config.yaml" ] && [ -f "package.json" ] && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
+            echo "Both sushi-config.yaml and package.json exist - SUSHI_USE_CONFIG_DEPENDENCIES is true, but package.json already exists. Using existing package.json."
+          elif [ ! -f "sushi-config.yaml" ] && [ ! -f "package.json" ]; then
+            echo "Neither sushi-config.yaml nor package.json found. Please provide one of them."
+            exit 1
+          else
+            echo "Using existing package.json or SUSHI_USE_CONFIG_DEPENDENCIES is false"
+          fi
+        fi
+      shell: bash
+      env:
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
         
     # --------------------------------------------------------------------------------------------------- #
     #                                                 SUSHI                                               #
