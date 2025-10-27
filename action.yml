@@ -66,6 +66,10 @@ inputs:
     description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
     default: false
     required: false
+  FIRELY_TERMINAL_VALIDATOR_ENGINE:
+    description: 'Firely Terminal validator engine to use for .NET validation. Available options: Regular, Advanced'
+    default: 'Regular'
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -139,31 +143,40 @@ runs:
         INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
        
-    # Restore all dependencies listed in the package.json file (need to be on the root level)
-    - name: FHIR Dependency restore
+    # Detect FHIR version from package.json (only when needed)
+    - name: Detect FHIR version from package.json
       run: |
-        if [ ! -f "package.json" ]; then
-          echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
-          exit 1
-        fi
-        
-        fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
-        fhirVersion=""
-        for fhirVersion in ${fhirVersions[@]}; do
-          fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
-          if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
-            echo "Found FHIR version $fhirVersion in package.json"
-            break
+        # Only run this step if .NET validation is enabled OR if we're not using SUSHI config dependencies
+        if $INPUT_DOTNET_VALIDATION_ENABLED || ($INPUT_SUSHI_ENABLED && ! $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES) || (! $INPUT_SUSHI_ENABLED); then
+          if [ ! -f "package.json" ]; then
+            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
+            exit 1
           fi
-        done
+          
+          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
+          fhirVersion=""
+          for fhirVersion in ${fhirVersions[@]}; do
+            fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
+            if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
+              echo "Found FHIR version $fhirVersion in package.json"
+              break
+            fi
+          done
 
-        if [[ -z "$fhirVersion" ]]; then
-          echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json (.fhirVersions)"
-          exit 1
+          if [[ -z "$fhirVersion" ]]; then
+            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json (.fhirVersions)"
+            exit 1
+          fi
+          echo "Detected FHIR version: $fhirVersion"
+          echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
+        else
+          echo "Skipping FHIR version detection from package.json (using SUSHI config or not needed)"
         fi
-        echo "Detected FHIR version: $fhirVersion"
-        echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
       shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
         
     # Set Firely Terminal FHIR specification and restore dependencies
     - name: Set FHIR specification and restore dependencies
@@ -403,7 +416,19 @@ runs:
     # --------------------------------------------------------------------------------------------------- #
     #                                            .NET VALIDATOR                                           #
     # --------------------------------------------------------------------------------------------------- #
-                
+    
+    # Set Firely Terminal validator engine
+    - name: Configure Firely Terminal validator engine
+      run: |
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          echo "Setting Firely Terminal validator engine to: $FIRELY_TERMINAL_VALIDATOR_ENGINE"
+          fhir config validator $FIRELY_TERMINAL_VALIDATOR_ENGINE
+        fi
+      shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        FIRELY_TERMINAL_VALIDATOR_ENGINE: ${{ inputs.FIRELY_TERMINAL_VALIDATOR_ENGINE }}
+
     # Run Quality Control checks incl. validation
     - name: Run Quality Control checks
       run: |
@@ -538,7 +563,7 @@ runs:
         echo "Finished validation using Java validator (Conformance resources) ..."
       shell: bash
       env:
-       FHIR_VERSION: "4.0"
+       FHIR_VERSION: ${{ env.FHIR_VERSION }}
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
@@ -591,7 +616,7 @@ runs:
       env:
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        PATH_TO_EXAMPLES: ${{ inputs.PATH_TO_EXAMPLES }}
-       FHIR_VERSION: "4.0"
+       FHIR_VERSION: ${{ env.FHIR_VERSION }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
