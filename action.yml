@@ -49,7 +49,7 @@ inputs:
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.7.3'
+    default: '6.7.4'
     required: true
   JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
@@ -65,10 +65,6 @@ inputs:
   JAVA_SNAPSHOT_ENABLED:
     description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
     default: false
-    required: false
-  FIRELY_TERMINAL_VALIDATOR_ENGINE:
-    description: 'Firely Terminal validator engine to use for .NET validation. Available options: Regular, Advanced'
-    default: 'Regular'
     required: false
 
 # Validate all resources using Firely Terminal 
@@ -143,8 +139,8 @@ runs:
         INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
        
-    # Detect FHIR version from package.json
-    - name: Detect FHIR version
+    # Restore all dependencies listed in the package.json file (need to be on the root level)
+    - name: FHIR Dependency restore
       run: |
         if [ ! -f "package.json" ]; then
           echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
@@ -407,19 +403,7 @@ runs:
     # --------------------------------------------------------------------------------------------------- #
     #                                            .NET VALIDATOR                                           #
     # --------------------------------------------------------------------------------------------------- #
-
-    # Set Firely Terminal validator engine
-    - name: Configure Firely Terminal validator engine
-      run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
-          echo "Setting Firely Terminal validator engine to: $FIRELY_TERMINAL_VALIDATOR_ENGINE"
-          fhir config validator $FIRELY_TERMINAL_VALIDATOR_ENGINE
-        fi
-      shell: bash
-      env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-        FIRELY_TERMINAL_VALIDATOR_ENGINE: ${{ inputs.FIRELY_TERMINAL_VALIDATOR_ENGINE }}
-
+                
     # Run Quality Control checks incl. validation
     - name: Run Quality Control checks
       run: |
@@ -554,7 +538,7 @@ runs:
         echo "Finished validation using Java validator (Conformance resources) ..."
       shell: bash
       env:
-       FHIR_VERSION: ${{ env.FHIR_VERSION }}
+       FHIR_VERSION: "4.0"
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
@@ -605,9 +589,9 @@ runs:
         fi
       shell: bash
       env:
-       FHIR_VERSION: ${{ env.FHIR_VERSION }}
        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
        PATH_TO_EXAMPLES: ${{ inputs.PATH_TO_EXAMPLES }}
+       FHIR_VERSION: "4.0"
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
