@@ -152,7 +152,7 @@ runs:
             exit 1
           fi
           
-          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0")
+          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0" "5.0.0")
           fhirVersion=""
           for fhirVersion in ${fhirVersions[@]}; do
             fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
@@ -163,7 +163,7 @@ runs:
           done
 
           if [[ -z "$fhirVersion" ]]; then
-            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0) was found in package.json (.fhirVersions)"
+            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0) was found in package.json (.fhirVersions)"
             exit 1
           fi
           echo "Detected FHIR version: $fhirVersion"
@@ -189,6 +189,8 @@ runs:
           elif [[ "$FHIR_VERSION" = "4.1.0" ]]; then
             fhir spec R4B
           elif [[ "$FHIR_VERSION" = "4.6.0" ]]; then
+            fhir spec R5
+          elif [[ "$FHIR_VERSION" = "5.0.0" ]]; then
             fhir spec R5
           else
             echo "This FHIR version is currently not supported."
@@ -526,7 +528,25 @@ runs:
               
         if $INPUT_JAVA_VALIDATION_ENABLED; then
           echo "Starting validation using Java validator (Conformance resources) ..."
-          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["devDependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          
+          # Determine core FHIR spec package name based on FHIR version to avoid conflicts with -version parameter
+          case "$FHIR_VERSION" in
+            "3.0.2") CORE_FHIR_PACKAGE="hl7.fhir.r3.core" ;;
+            "4.0.1") CORE_FHIR_PACKAGE="hl7.fhir.r4.core" ;;
+            "4.1.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
+            "4.6.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
+            "5.0.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
+            *) CORE_FHIR_PACKAGE="" ;;
+          esac
+          
+          # Filter out core FHIR spec to prevent conflict with -version parameter
+          if [ -n "$CORE_FHIR_PACKAGE" ]; then
+            echo "Filtering out $CORE_FHIR_PACKAGE from dependencies to prevent conflict with -version $FHIR_VERSION"
+            IG_DEPENDENCIES=$(jq -r --arg core "$CORE_FHIR_PACKAGE" '(.dependencies + .["devDependencies"]) | to_entries | map(select(.key != $core)) | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          else
+            IG_DEPENDENCIES=$(jq -r '(.dependencies + .["devDependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          fi
+          
           echo "IG_DEPENDENCIES: $IG_DEPENDENCIES"
           
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to provide all other directories as context for the current validation
@@ -581,7 +601,22 @@ runs:
         NC=$'\033[0m'
         
         if $INPUT_JAVA_VALIDATION_ENABLED; then
-          IG_DEPENDENCIES=$(jq -r '(.dependencies + .["zts-dependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          # Determine core FHIR spec package name based on FHIR version to avoid conflicts with -version parameter
+          case "$FHIR_VERSION" in
+            "3.0.2") CORE_FHIR_PACKAGE="hl7.fhir.r3.core" ;;
+            "4.0.1") CORE_FHIR_PACKAGE="hl7.fhir.r4.core" ;;
+            "4.1.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
+            "4.6.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
+            "5.0.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
+            *) CORE_FHIR_PACKAGE="" ;;
+          esac
+          
+          # Filter out core FHIR spec to prevent conflict with -version parameter
+          if [ -n "$CORE_FHIR_PACKAGE" ]; then
+            IG_DEPENDENCIES=$(jq -r --arg core "$CORE_FHIR_PACKAGE" '(.dependencies + .["zts-dependencies"]) | to_entries | map(select(.key != $core)) | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          else
+            IG_DEPENDENCIES=$(jq -r '(.dependencies + .["zts-dependencies"]) | to_entries | map("-ig " + .key + "#" + .value) | join(" ")' package.json)
+          fi
           for p in $INPUT_PATH_TO_CONFORMANCE_RESOURCES; # Get combined path to conformance resources, we want to validate against the current version of the conformance resources
           do  
             COMBINED_IG_PARAMETERS+="-ig $GITHUB_WORKSPACE/$p "
