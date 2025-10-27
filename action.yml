@@ -145,8 +145,8 @@ runs:
     # Detect FHIR version from package.json (only when needed)
     - name: Detect FHIR version from package.json
       run: |
-        # Only run this step if .NET validation is enabled OR if we're not using SUSHI config dependencies
-        if $INPUT_DOTNET_VALIDATION_ENABLED || ($INPUT_SUSHI_ENABLED && ! $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES) || (! $INPUT_SUSHI_ENABLED); then
+        # Only run this step if .NET validation is enabled OR Java validation is enabled OR if we're not using SUSHI config dependencies
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED || ($INPUT_SUSHI_ENABLED && ! $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES) || (! $INPUT_SUSHI_ENABLED); then
           if [ ! -f "package.json" ]; then
             echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
             exit 1
@@ -174,6 +174,50 @@ runs:
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
+        
+    # Detect FHIR version from sushi-config.yaml (when using SUSHI config dependencies)
+    - name: Detect FHIR version from sushi-config.yaml
+      run: |
+        # Only run when SUSHI is enabled and using config dependencies and the package.json detection was skipped
+        if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES && ! $INPUT_DOTNET_VALIDATION_ENABLED && $INPUT_JAVA_VALIDATION_ENABLED; then
+          if [ -f "sushi-config.yaml" ]; then
+            # Extract FHIR version from sushi-config.yaml
+            fhirVersion=$(yq eval '.fhirVersion' sushi-config.yaml 2>/dev/null || echo "")
+            if [ -n "$fhirVersion" ]; then
+              echo "Detected FHIR version from sushi-config.yaml: $fhirVersion"
+              echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
+            else
+              echo "Could not detect FHIR version from sushi-config.yaml"
+              exit 1
+            fi
+          elif [ -f "package.json" ]; then
+            # Fall back to package.json if it was generated from sushi-config.yaml
+            fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0" "5.0.0")
+            fhirVersion=""
+            for fhirVersion in ${fhirVersions[@]}; do
+              fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
+              if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
+                echo "Found FHIR version $fhirVersion in generated package.json"
+                echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
+                break
+              fi
+            done
+            if [[ -z "$fhirVersion" ]]; then
+              echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0) was found in package.json (.fhirVersions)"
+              exit 1
+            fi
+          else
+            echo "Neither sushi-config.yaml nor package.json found for FHIR version detection"
+            exit 1
+          fi
+        fi
+      shell: bash
+      env:
+        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
         
