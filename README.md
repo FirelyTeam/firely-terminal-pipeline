@@ -65,6 +65,10 @@ You can specify the following options using the ["with" syntax](https://docs.git
  * SUSHI_OPTIONS:
    - description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
    - required: false
+ * SUSHI_USE_CONFIG_DEPENDENCIES:
+   - description: 'When SUSHI is enabled, use dependencies from sushi-config.yaml instead of package.json. If sushi-config.yaml exists and package.json does not, this will automatically convert sushi-config.yaml to package.json.'
+   - required: false
+   - default: true
  * FIRELY_TERMINAL_VERSION:
    - description: 'Version of Firely Terminal used for .NET-based validation'
    - default: '3.3.2'
@@ -80,6 +84,17 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - description: 'Version of SUSHI used for compiling the FSH files'
    - default: '3.13.1'
    - required: true
+ * TERMINOLOGY_SERVICE_BFARM_ENABLED:
+   - description: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
+   - default: false
+   - required: false
+ * JAVA_SNAPSHOT_ENABLED:
+   - description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
+   - default: false
+   - required: false
+ * FIRELY_TERMINAL_VALIDATOR_ENGINE:
+   - description: 'Optional: Firely Terminal validator engine to use for .NET validation. From Firely Terminal 3.5.0 onwards, the default validator engine changed. Use "Legacy" to use the old validator engine from pre-3.5.0 versions. Available options: Default, Legacy. If not specified, Firely Terminal uses its built-in default.'
+   - required: false
 
 ## Changelog
 

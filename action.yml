@@ -67,8 +67,7 @@ inputs:
     default: false
     required: false
   FIRELY_TERMINAL_VALIDATOR_ENGINE:
-    description: 'Firely Terminal validator engine to use for .NET validation. Available options: Regular, Advanced'
-    default: 'Regular'
+    description: 'Optional: Firely Terminal validator engine to use for .NET validation. From Firely Terminal 3.5.0 onwards, the default validator engine changed. Use "Legacy" to use the old validator engine from pre-3.5.0 versions. Available options: Default, Legacy. If not specified, Firely Terminal uses its built-in default.'
     required: false
 
 # Validate all resources using Firely Terminal 
@@ -417,12 +416,14 @@ runs:
     #                                            .NET VALIDATOR                                           #
     # --------------------------------------------------------------------------------------------------- #
     
-    # Set Firely Terminal validator engine
+    # Set Firely Terminal validator engine (only if specified)
     - name: Configure Firely Terminal validator engine
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED && [ -n "$FIRELY_TERMINAL_VALIDATOR_ENGINE" ]; then
           echo "Setting Firely Terminal validator engine to: $FIRELY_TERMINAL_VALIDATOR_ENGINE"
           fhir config validator $FIRELY_TERMINAL_VALIDATOR_ENGINE
+        elif $INPUT_DOTNET_VALIDATION_ENABLED; then
+          echo "Using default Firely Terminal validator engine (no engine specified)"
         fi
       shell: bash
       env:
