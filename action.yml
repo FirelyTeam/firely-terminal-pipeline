@@ -320,10 +320,7 @@ runs:
       env:
         NEED_SUSHI_CONVERSION: ${{ env.NEED_SUSHI_CONVERSION }}
         FHIR_VERSION: ${{ env.FHIR_VERSION }}
-      shell: bash
-      env:
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
+      
 
     # Set Firely Terminal FHIR specification and restore dependencies
     - name: Set FHIR specification and restore dependencies
