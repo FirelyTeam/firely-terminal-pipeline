@@ -40,9 +40,9 @@ inputs:
     description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
     required: false
   SUSHI_USE_CONFIG_DEPENDENCIES:
-    description: 'When SUSHI is enabled, use dependencies from sushi-config.yaml instead of package.json. If sushi-config.yaml exists and package.json does not, this will automatically convert sushi-config.yaml to package.json.'
+    description: 'When SUSHI is enabled and both sushi-config.yaml and package.json exist, choose which to use for dependencies. If only sushi-config.yaml exists, it will automatically be used. If only package.json exists, it will be used. This flag only matters when both files exist.'
     required: false
-    default: true
+    default: false
   FIRELY_TERMINAL_VERSION:
     description: 'Version of Firely Terminal used for .NET-based validation'
     default: '3.5.0-beta-1'
@@ -141,35 +141,105 @@ runs:
         INPUT_SIMPLIFIER_USERNAME: ${{ inputs.SIMPLIFIER_USERNAME }}
         INPUT_SIMPLIFIER_PASSWORD: ${{ inputs.SIMPLIFIER_PASSWORD }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-       
-    # Detect FHIR version from package.json (only when needed)
-    - name: Detect FHIR version from package.json
+
+    # Install yq for YAML processing (needed for FHIR version detection and SUSHI config conversion)
+    - name: Install yq for YAML processing
       run: |
-        # Only run this step if .NET validation is enabled OR Java validation is enabled OR if we're not using SUSHI config dependencies
-        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED || ($INPUT_SUSHI_ENABLED && ! $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES) || (! $INPUT_SUSHI_ENABLED); then
-          if [ ! -f "package.json" ]; then
-            echo "package.json does not exist. Please add it to the root folder and add all project dependencies."
+        if [ -f "sushi-config.yaml" ]; then
+          # Install yq if we have a sushi-config.yaml file (needed for version detection or conversion)
+          sudo apt-get update > /dev/null
+          sudo apt-get install --no-install-recommends -y yq > /dev/null
+          echo "Installed yq for YAML processing"
+        else
+          echo "Skipping yq installation (no sushi-config.yaml found)"
+        fi
+      shell: bash
+       
+    # Determine FHIR version source and dependency handling strategy
+    - name: Detect FHIR version and determine dependency source
+      run: |
+        # FHIR version is always required for validation
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
+          
+          # Check which files are available
+          packageJsonExists=false
+          sushiConfigExists=false
+          [ -f "package.json" ] && packageJsonExists=true
+          [ -f "sushi-config.yaml" ] && sushiConfigExists=true
+          
+          echo "File availability: package.json=$packageJsonExists, sushi-config.yaml=$sushiConfigExists"
+          
+          # Determine dependency source strategy and FHIR version source
+          usePackageJson=false
+          useSushiConfig=false
+          needSushiConversion=false
+          
+          if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
+            # Explicitly configured to use SUSHI config dependencies
+            if [ "$sushiConfigExists" = true ]; then
+              useSushiConfig=true
+              needSushiConversion=true
+              echo "Strategy: Using sushi-config.yaml dependencies (explicitly configured)"
+            else
+              echo "ERROR: SUSHI_USE_CONFIG_DEPENDENCIES=true but sushi-config.yaml not found"
+              exit 1
+            fi
+          elif [ "$packageJsonExists" = true ]; then
+            # Use existing package.json (preferred when available)
+            usePackageJson=true
+            needSushiConversion=false
+            echo "Strategy: Using existing package.json"
+          elif $INPUT_SUSHI_ENABLED && [ "$sushiConfigExists" = true ]; then
+            # Auto-convert sushi-config.yaml to package.json (smart detection)
+            useSushiConfig=true
+            needSushiConversion=true
+            echo "Strategy: Auto-converting sushi-config.yaml to package.json (no package.json available)"
+          elif [ "$sushiConfigExists" = true ]; then
+            # Use sushi-config.yaml for FHIR version only (no SUSHI enabled)
+            useSushiConfig=true
+            needSushiConversion=false
+            echo "Strategy: Using sushi-config.yaml for FHIR version only (SUSHI not enabled)"
+          else
+            echo "ERROR: Neither package.json nor sushi-config.yaml found. At least one is required."
             exit 1
           fi
           
-          fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0" "5.0.0")
+          # Store strategy decisions for subsequent steps
+          echo "NEED_SUSHI_CONVERSION=$needSushiConversion" >> "$GITHUB_ENV"
+          echo "USE_SUSHI_CONFIG=$useSushiConfig" >> "$GITHUB_ENV"
+          echo "USE_PACKAGE_JSON=$usePackageJson" >> "$GITHUB_ENV"
+          
+          # Extract FHIR version from the determined source (accept any version found)
           fhirVersion=""
-          for fhirVersion in ${fhirVersions[@]}; do
-            fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
-            if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
+          
+          if [ "$usePackageJson" = true ]; then
+            # Extract from package.json - get first fhirVersion found
+            fhirVersion=$(jq -r '.fhirVersions[0]' package.json 2>/dev/null || echo "")
+            if [ -n "$fhirVersion" ] && [ "$fhirVersion" != "null" ]; then
               echo "Found FHIR version $fhirVersion in package.json"
-              break
             fi
-          done
-
-          if [[ -z "$fhirVersion" ]]; then
-            echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0) was found in package.json (.fhirVersions)"
+          elif [ "$useSushiConfig" = true ]; then
+            # Extract from sushi-config.yaml
+            fhirVersion=$(yq eval '.fhirVersion' sushi-config.yaml 2>/dev/null || echo "")
+            if [ -n "$fhirVersion" ]; then
+              echo "Found FHIR version $fhirVersion in sushi-config.yaml"
+            fi
+          fi
+          
+          # Only error if no FHIR version found at all
+          if [[ -z "$fhirVersion" ]] || [[ "$fhirVersion" = "null" ]]; then
+            if [ "$usePackageJson" = true ]; then
+              echo "ERROR: No FHIR version found in package.json (.fhirVersions)"
+            else
+              echo "ERROR: No FHIR version found in sushi-config.yaml (.fhirVersion)"
+            fi
             exit 1
           fi
+          
           echo "Detected FHIR version: $fhirVersion"
           echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
         else
-          echo "Skipping FHIR version detection from package.json (using SUSHI config or not needed)"
+          echo "Skipping FHIR version detection (no validation enabled)"
         fi
       shell: bash
       env:
@@ -177,50 +247,84 @@ runs:
         INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
-        
-    # Detect FHIR version from sushi-config.yaml (when using SUSHI config dependencies)
-    - name: Detect FHIR version from sushi-config.yaml
+
+    # Validate that the detected FHIR version is supported by this action
+    - name: Validate FHIR version support
       run: |
-        # Only run when SUSHI is enabled and using config dependencies and the package.json detection was skipped
-        if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES && ! $INPUT_DOTNET_VALIDATION_ENABLED && $INPUT_JAVA_VALIDATION_ENABLED; then
-          if [ -f "sushi-config.yaml" ]; then
-            # Extract FHIR version from sushi-config.yaml
-            fhirVersion=$(yq eval '.fhirVersion' sushi-config.yaml 2>/dev/null || echo "")
-            if [ -n "$fhirVersion" ]; then
-              echo "Detected FHIR version from sushi-config.yaml: $fhirVersion"
-              echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
-            else
-              echo "Could not detect FHIR version from sushi-config.yaml"
-              exit 1
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
+          # Define supported FHIR versions
+          supportedVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0" "5.0.0")
+          
+          # Check if detected version is supported
+          supportedVersion=false
+          for supportedFhirVersion in ${supportedVersions[@]}; do
+            if [[ "$FHIR_VERSION" = "$supportedFhirVersion" ]]; then
+              supportedVersion=true
+              break
             fi
-          elif [ -f "package.json" ]; then
-            # Fall back to package.json if it was generated from sushi-config.yaml
-            fhirVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0" "5.0.0")
-            fhirVersion=""
-            for fhirVersion in ${fhirVersions[@]}; do
-              fhirVersionFoundInPackageJson=$(jq '.fhirVersions | index("'"$fhirVersion"'")' package.json 2>/dev/null || echo null)
-              if [[ ! "$fhirVersionFoundInPackageJson" = null ]]; then
-                echo "Found FHIR version $fhirVersion in generated package.json"
-                echo "FHIR_VERSION=$fhirVersion" >> "$GITHUB_ENV"
-                break
-              fi
-            done
-            if [[ -z "$fhirVersion" ]]; then
-              echo "No supported FHIR version (3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0) was found in package.json (.fhirVersions)"
-              exit 1
-            fi
+          done
+          
+          if [ "$supportedVersion" = true ]; then
+            echo "✅ FHIR version $FHIR_VERSION is supported by this action"
           else
-            echo "Neither sushi-config.yaml nor package.json found for FHIR version detection"
-            exit 1
+            echo "⚠️  WARNING: FHIR version $FHIR_VERSION is not officially supported by this action."
+            echo "⚠️  Supported versions are: 3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0"
+            echo "⚠️  The action will continue but may encounter issues during validation."
+            echo "::warning::FHIR version $FHIR_VERSION is not officially supported. Supported versions: 3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0"
           fi
+        else
+          echo "Skipping FHIR version validation (no validation enabled)"
         fi
       shell: bash
       env:
+        FHIR_VERSION: ${{ env.FHIR_VERSION }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
+
+    # Convert sushi-config.yaml to package.json (only when needed based on previous decision)
+    - name: Convert SUSHI config to package.json
+      run: |
+        # Only run conversion if the previous step determined it's needed
+        if [ "$NEED_SUSHI_CONVERSION" = "true" ]; then
+          echo "Converting sushi-config.yaml to package.json based on dependency strategy..."
+          
+          # Use FHIR version from previous step (already validated)
+          fhirVersion="$FHIR_VERSION"
+          
+          # Extract dependencies (if they exist)
+          dependencies=""
+          if yq eval '.dependencies' sushi-config.yaml | grep -q ":"; then
+            dependencies=$(yq eval '.dependencies | to_entries | map("\"" + .key + "\": \"" + .value + "\"") | join(", ")' sushi-config.yaml)
+          fi
+          
+          # Create or overwrite package.json
+          cat > package.json << EOF
+        {
+          "name": "sushi-generated-project",
+          "version": "1.0.0", 
+          "description": "Generated from sushi-config.yaml",
+          "fhirVersions": [
+            "$fhirVersion"
+          ],
+          "dependencies": {
+            $dependencies
+          }
+        }
+        EOF
+          echo "Successfully created package.json from sushi-config.yaml"
+          echo "Package.json now available for dependency restoration"
+        else
+          echo "Skipping SUSHI config conversion (using existing package.json or conversion not needed)"
+        fi
+      shell: bash
+      env:
+        NEED_SUSHI_CONVERSION: ${{ env.NEED_SUSHI_CONVERSION }}
+        FHIR_VERSION: ${{ env.FHIR_VERSION }}
+      shell: bash
+      env:
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
-        
+
     # Set Firely Terminal FHIR specification and restore dependencies
     - name: Set FHIR specification and restore dependencies
       run: |
@@ -340,66 +444,7 @@ runs:
       env:
         INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED: ${{ inputs.TERMINOLOGY_SERVICE_BFARM_ENABLED }}
         
-    # --------------------------------------------------------------------------------------------------- #
-    #                                        SUSHI CONFIG CONVERSION                                      #
-    # --------------------------------------------------------------------------------------------------- #
-    
-    - name: Install yq for YAML processing
-      run: |
-        if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
-          if [ -f "sushi-config.yaml" ] && [ ! -f "package.json" ]; then
-            sudo apt-get update > /dev/null
-            sudo apt-get install --no-install-recommends -y yq > /dev/null
-          fi
-        fi
-      shell: bash
-      env:
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
-    
-    - name: Convert sushi-config.yaml to package.json
-      run: |
-        if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
-          if [ -f "sushi-config.yaml" ] && [ ! -f "package.json" ]; then
-            echo "Converting sushi-config.yaml to package.json..."
-            
-            # Extract FHIR version
-            fhirVersion=$(yq eval '.fhirVersion' sushi-config.yaml)
-            
-            # Extract dependencies (if they exist)
-            dependencies=""
-            if yq eval '.dependencies' sushi-config.yaml | grep -q ":"; then
-              dependencies=$(yq eval '.dependencies | to_entries | map("\"" + .key + "\": \"" + .value + "\"") | join(", ")' sushi-config.yaml)
-            fi
-            
-            # Create package.json
-            cat > package.json << EOF
-        {
-          "name": "sushi-generated-project",
-          "version": "1.0.0", 
-          "description": "Generated from sushi-config.yaml",
-          "fhirVersions": [
-            "$fhirVersion"
-          ],
-          "dependencies": {
-            $dependencies
-          }
-        }
-        EOF
-            echo "Successfully created package.json from sushi-config.yaml"
-          elif [ -f "sushi-config.yaml" ] && [ -f "package.json" ] && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
-            echo "Both sushi-config.yaml and package.json exist - SUSHI_USE_CONFIG_DEPENDENCIES is true, but package.json already exists. Using existing package.json."
-          elif [ ! -f "sushi-config.yaml" ] && [ ! -f "package.json" ]; then
-            echo "Neither sushi-config.yaml nor package.json found. Please provide one of them."
-            exit 1
-          else
-            echo "Using existing package.json or SUSHI_USE_CONFIG_DEPENDENCIES is false"
-          fi
-        fi
-      shell: bash
-      env:
-        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
-        INPUT_SUSHI_USE_CONFIG_DEPENDENCIES: ${{ inputs.SUSHI_USE_CONFIG_DEPENDENCIES }}
+
         
     # --------------------------------------------------------------------------------------------------- #
     #                                                 SUSHI                                               #
