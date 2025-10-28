@@ -147,9 +147,15 @@ runs:
       run: |
         if [ -f "sushi-config.yaml" ]; then
           # Install yq if we have a sushi-config.yaml file (needed for version detection or conversion)
-          sudo apt-get update > /dev/null
-          sudo apt-get install --no-install-recommends -y yq > /dev/null
-          echo "Installed yq for YAML processing"
+          echo "Installing yq for YAML processing..."
+          
+          # Install yq using the recommended method to ensure compatibility
+          sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/bin/yq
+          
+          echo "Installed yq version: $(yq --version)"
+          echo "Testing yq with sushi-config.yaml:"
+          yq eval '.fhirVersion' sushi-config.yaml || echo "yq test failed"
         else
           echo "Skipping yq installation (no sushi-config.yaml found)"
         fi
@@ -158,7 +164,6 @@ runs:
     # Determine FHIR version source and dependency handling strategy
     - name: Detect FHIR version and determine dependency source
       run: |
-        # FHIR version is always required for validation
         if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
           
           # Check which files are available
@@ -219,10 +224,31 @@ runs:
               echo "Found FHIR version $fhirVersion in package.json"
             fi
           elif [ "$useSushiConfig" = true ]; then
-            # Extract from sushi-config.yaml
+            # Extract from sushi-config.yaml - try different yq syntax approaches
+            echo "Attempting to extract FHIR version from sushi-config.yaml..."
+            
+            # Debug: Show the raw fhirVersion value
+            echo "Raw fhirVersion from sushi-config.yaml:"
+            yq eval '.fhirVersion' sushi-config.yaml || echo "yq eval failed"
+            
+            # Try multiple extraction methods
             fhirVersion=$(yq eval '.fhirVersion' sushi-config.yaml 2>/dev/null || echo "")
-            if [ -n "$fhirVersion" ]; then
+            if [ -z "$fhirVersion" ] || [ "$fhirVersion" = "null" ]; then
+              # Try alternative yq syntax
+              fhirVersion=$(yq '.fhirVersion' sushi-config.yaml 2>/dev/null || echo "")
+            fi
+            if [ -z "$fhirVersion" ] || [ "$fhirVersion" = "null" ]; then
+              # Try with explicit string output
+              fhirVersion=$(yq eval '.fhirVersion | @base64' sushi-config.yaml 2>/dev/null | base64 -d 2>/dev/null || echo "")
+            fi
+            
+            if [ -n "$fhirVersion" ] && [ "$fhirVersion" != "null" ]; then
               echo "Found FHIR version $fhirVersion in sushi-config.yaml"
+            else
+              echo "DEBUG: Full sushi-config.yaml content:"
+              cat sushi-config.yaml | head -20
+              echo "DEBUG: yq version:"
+              yq --version
             fi
           fi
           
