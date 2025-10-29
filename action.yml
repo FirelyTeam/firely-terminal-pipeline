@@ -200,10 +200,17 @@ runs:
             needSushiConversion=true
             echo "Strategy: Auto-converting sushi-config.yaml to package.json (no package.json available)"
           elif [ "$sushiConfigExists" = true ]; then
-            # Use sushi-config.yaml for FHIR version only (no SUSHI enabled)
+            # Use sushi-config.yaml for FHIR version, check if conversion needed for .NET validation
             useSushiConfig=true
-            needSushiConversion=false
-            echo "Strategy: Using sushi-config.yaml for FHIR version only (SUSHI not enabled)"
+            if $INPUT_DOTNET_VALIDATION_ENABLED; then
+              # .NET validation requires package.json for dependency restoration
+              needSushiConversion=true
+              echo "Strategy: Converting sushi-config.yaml to package.json (.NET validation requires package.json for dependencies)"
+            else
+              # Only Java validation, no package.json needed
+              needSushiConversion=false
+              echo "Strategy: Using sushi-config.yaml for FHIR version only (Java validation only)"
+            fi
           else
             echo "ERROR: Neither package.json nor sushi-config.yaml found. At least one is required."
             exit 1
