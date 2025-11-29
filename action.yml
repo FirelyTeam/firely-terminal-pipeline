@@ -178,12 +178,14 @@ runs:
         if [[ "$INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED" == "true" ]]; then        
           devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
           if [[ -n "$devDependencies" ]]; then
-            validPackages=()
+            validPackages=()      # JSON-quoted names for token request
+            validPackageNames=()  # plain names for download loop
             for packageName in $devDependencies; do
               echo "Checking if '$packageName' exists on ZTS server..."
               catalogResponse=$(curl -s "https://terminologien.bfarm.de/packages/catalog?name=${packageName}")
               if [[ "$catalogResponse" != "[]" ]]; then
                 validPackages+=("\"$packageName\"")
+                validPackageNames+=("$packageName")
               else
                 echo "Not found in ZTS catalog: $packageName — skipping"
               fi
@@ -217,10 +219,8 @@ runs:
                 exit 1
             fi
 
-            ztsDependencyPairs=$(jq -r '.["devDependencies"] | to_entries[] | "\(.key)=\(.value)"' package.json)
-            for ztsDependencyPair in $ztsDependencyPairs; do
-              packageName=${ztsDependencyPair%=*}
-              packageVersion=${ztsDependencyPair#*=}
+            for packageName in "${validPackageNames[@]}"; do
+              packageVersion=$(jq -r --arg name "$packageName" '.["devDependencies"][$name]' package.json)
               echo "Trying to install terminology package '$packageName' in version '$packageVersion' from ZTS registry"
               
               packageFile="${packageName}-${packageVersion}.tgz"
@@ -231,11 +231,11 @@ runs:
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
                 fhirCacheLocation=$(fhir cache location --path)
                 fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
-                mkdir -p $fhirPackageCacheDest
-                tar -xzf $packageFile -C $fhirPackageCacheDest
+                mkdir -p "$fhirPackageCacheDest"
+                tar -xzf "$packageFile" -C "$fhirPackageCacheDest"
 
                 if [[ ! -d "$fhirPackageCacheDest" ]]; then
-                  echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
+                  echo "Error: Failed to move $packageFile to $fhirPackageCacheDest"
                   exit 1
                 fi
 
