@@ -323,7 +323,7 @@ runs:
       run: |
         if $CLOSE_SLICING_FOR_VALIDATION; then
           echo "Pre-processing FHIR profiles. Changing all slicings open -> closed..."
-          find PATH_TO_CONFORMANCE_RESOURCES -name '*.json' -type f | while read -r file; do
+          find INPUT_PATH_TO_CONFORMANCE_RESOURCES -name '*.json' -type f | while read -r file; do
             jq '
               if .resourceType == "StructureDefinition" and .differential?.element then
                 .differential.element |= map(
@@ -342,6 +342,7 @@ runs:
       shell: bash
       env:
         CLOSE_SLICING_FOR_VALIDATION: ${{ inputs.CLOSE_SLICING_FOR_VALIDATION }}
+        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
         
     # --------------------------------------------------------------------------------------------------- #
     #                                            .NET VALIDATOR                                           #
@@ -419,16 +420,6 @@ runs:
       env:
        JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
        JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
-       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-      
-    - name: Install jq
-      run: |
-        if $INPUT_JAVA_VALIDATION_ENABLED; then 
-          sudo apt-get update > /dev/null
-          sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
-        fi
-      shell: bash
-      env:
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
           
     - name: Validate all conformance resources in scope of the repository
