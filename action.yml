@@ -323,7 +323,7 @@ runs:
       run: |
         if $CLOSE_SLICING_FOR_VALIDATION; then
           echo "Pre-processing FHIR profiles. Changing all slicings open -> closed..."
-          find INPUT_PATH_TO_CONFORMANCE_RESOURCES -name '*.json' -type f | while read -r file; do
+          find $INPUT_PATH_TO_CONFORMANCE_RESOURCES -name '*.json' -type f | while read -r file; do
             jq '
               if .resourceType == "StructureDefinition" and .differential?.element then
                 .differential.element |= map(
