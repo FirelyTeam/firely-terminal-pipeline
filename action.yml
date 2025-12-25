@@ -62,6 +62,10 @@ inputs:
     description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
     default: false
     required: false
+  CLOSE_SLICING_FOR_VALIDATION:
+    description: 'Constrains all defined element slicings to closed, ensuring that instance elements must conform to one of the declared slices. This strengthens validation by preventing acceptance of elements that do not match the defined slicing discriminators.'
+    default: false
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -310,6 +314,34 @@ runs:
       env:
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         INPUT_SUSHI_OPTIONS: ${{ inputs.SUSHI_OPTIONS }}
+
+    # --------------------------------------------------------------------------------------------------- #
+    #                                            Pre-processing                                           #
+    # --------------------------------------------------------------------------------------------------- #
+
+    - name: Pre-processing FHIR profiles (Slicing open-closed)
+      run: |
+        if $CLOSE_SLICING_FOR_VALIDATION; then
+          echo "Pre-processing FHIR profiles. Changing all slicings open -> closed..."
+          find PATH_TO_CONFORMANCE_RESOURCES -name '*.json' -type f | while read -r file; do
+            jq '
+              if .resourceType == "StructureDefinition" and .differential?.element then
+                .differential.element |= map(
+                  if .slicing then
+                    .slicing.rules = "closed"
+                  else
+                    .
+                  end
+                )
+              else
+                .
+              end
+            ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+          done
+        fi
+      shell: bash
+      env:
+        CLOSE_SLICING_FOR_VALIDATION: ${{ inputs.CLOSE_SLICING_FOR_VALIDATION }}
         
     # --------------------------------------------------------------------------------------------------- #
     #                                            .NET VALIDATOR                                           #
