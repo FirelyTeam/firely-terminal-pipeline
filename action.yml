@@ -324,7 +324,7 @@ runs:
         childProfiles_tmp="$(mktemp)"
         
         # Pass 1: collect all baseDefinition URLs (profiles that have children)
-        find "$PATH_TO_CONFORMANCE_RESOURCES" -type f -name '*.json' -print |
+        find "$INPUT_PATH_TO_CONFORMANCE_RESOURCES" -type f -name '*.json' -print |
         while IFS= read -r f; do
           rt="$(jq -r '.resourceType // empty' "$f")"
           [ "$rt" = "StructureDefinition" ] || continue
@@ -334,7 +334,7 @@ runs:
         done | sort -u > "$childProfiles_tmp"
 
         # Pass 2: close slicings only for child StructureDefinitions -> Prevent "The base snapshot marks a slicing as closed, but the differential tries to extend it" error
-        find "$PATH_TO_CONFORMANCE_RESOURCES" -type f -name '*.json' -print |
+        find "$INPUT_PATH_TO_CONFORMANCE_RESOURCES" -type f -name '*.json' -print |
         while IFS= read -r f; do
           rt="$(jq -r '.resourceType // empty' "$f")"
           [ "$rt" = "StructureDefinition" ] || continue
