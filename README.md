@@ -80,6 +80,10 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - description: 'Version of SUSHI used for compiling the FSH files'
    - default: '3.13.1'
    - required: true
+ * CLOSE_SLICING_FOR_VALIDATION:
+   - description: 'Constrains all defined element slicings to closed, ensuring that instance elements must conform to one of the declared slices. This strengthens validation by preventing acceptance of elements that do not match the defined slicing discriminators.'
+    - default: false
+   - required: false
 
 ## Changelog
 
