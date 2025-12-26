@@ -321,7 +321,7 @@ runs:
 
     - name: Pre-processing FHIR profiles (Slicing open-closed)
       run: |
-        if $INPUT_SUSHI_ENABLED; then
+        if $CLOSE_SLICING_FOR_VALIDATION; then
           childProfiles_tmp="$(mktemp)"
           
           # Pass 1: collect all baseDefinition URLs (profiles that have children)
