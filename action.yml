@@ -40,7 +40,7 @@ inputs:
     description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
     required: false
   SUSHI_USE_CONFIG_DEPENDENCIES:
-    description: 'When SUSHI is enabled and both sushi-config.yaml and package.json exist, choose which to use for dependencies. If only sushi-config.yaml exists, it will automatically be used. If only package.json exists, it will be used. This flag only matters when both files exist.'
+    description: 'When both sushi-config.yaml and package.json exist, set this to true to use sushi-config.yaml as the source-of-truth for dependencies instead of package.json. When false (default), package.json takes precedence if it exists. If only one file exists, that file is used regardless of this setting.'
     required: false
     default: false
   FIRELY_TERMINAL_VERSION:
@@ -184,12 +184,16 @@ runs:
           useSushiConfig=false
           needSushiConversion=false
           
-          if $INPUT_SUSHI_ENABLED && $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
-            # Explicitly configured to use SUSHI config dependencies
+          if $INPUT_SUSHI_USE_CONFIG_DEPENDENCIES; then
+            # Explicitly configured to use SUSHI config as source-of-truth for dependencies
             if [ "$sushiConfigExists" = true ]; then
               useSushiConfig=true
               needSushiConversion=true
-              echo "Strategy: Using sushi-config.yaml dependencies (explicitly configured)"
+              if [ "$packageJsonExists" = true ]; then
+                echo "Strategy: Using sushi-config.yaml as source-of-truth for dependencies (SUSHI_USE_CONFIG_DEPENDENCIES=true, package.json will be ignored)"
+              else
+                echo "Strategy: Using sushi-config.yaml as source-of-truth for dependencies (SUSHI_USE_CONFIG_DEPENDENCIES=true)"
+              fi
             else
               echo "ERROR: SUSHI_USE_CONFIG_DEPENDENCIES=true but sushi-config.yaml not found"
               exit 1
@@ -324,7 +328,11 @@ runs:
       run: |
         # Only run conversion if the previous step determined it's needed
         if [ "$NEED_SUSHI_CONVERSION" = "true" ]; then
-          echo "Converting sushi-config.yaml to package.json based on dependency strategy..."
+          if [ -f "package.json" ]; then
+            echo "Overwriting existing package.json with dependencies from sushi-config.yaml (source-of-truth)"
+          else
+            echo "Creating package.json from sushi-config.yaml..."
+          fi
           
           # Use FHIR version from previous step (already validated)
           fhirVersion="$FHIR_VERSION"
