@@ -49,14 +49,14 @@ inputs:
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.7.4'
+    default: '6.7.10'
     required: true
   JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
     default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
-    default: '3.16.5'
+    default: '3.17.0'
     required: true
   TERMINOLOGY_SERVICE_BFARM_ENABLED:
     description: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
@@ -64,6 +64,10 @@ inputs:
     required: false
   JAVA_SNAPSHOT_ENABLED:
     description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
+    default: false
+    required: false
+  CLOSE_SLICING_FOR_VALIDATION:
+    description: 'Constrains all defined element slicings to closed, ensuring that instance elements must conform to one of the declared slices. This strengthens validation by preventing acceptance of elements that do not match the defined slicing discriminators.'
     default: false
     required: false
   FIRELY_TERMINAL_VALIDATOR_ENGINE:
@@ -398,12 +402,14 @@ runs:
         if [[ "$INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED" == "true" ]]; then        
           devDependencies=$(jq -r '.["devDependencies"] | keys[]?' package.json)
           if [[ -n "$devDependencies" ]]; then
-            validPackages=()
+            validPackages=()      # JSON-quoted names for token request
+            validPackageNames=()  # plain names for download loop
             for packageName in $devDependencies; do
               echo "Checking if '$packageName' exists on ZTS server..."
               catalogResponse=$(curl -s "https://terminologien.bfarm.de/packages/catalog?name=${packageName}")
               if [[ "$catalogResponse" != "[]" ]]; then
                 validPackages+=("\"$packageName\"")
+                validPackageNames+=("$packageName")
               else
                 echo "Not found in ZTS catalog: $packageName — skipping"
               fi
@@ -437,10 +443,8 @@ runs:
                 exit 1
             fi
 
-            ztsDependencyPairs=$(jq -r '.["devDependencies"] | to_entries[] | "\(.key)=\(.value)"' package.json)
-            for ztsDependencyPair in $ztsDependencyPairs; do
-              packageName=${ztsDependencyPair%=*}
-              packageVersion=${ztsDependencyPair#*=}
+            for packageName in "${validPackageNames[@]}"; do
+              packageVersion=$(jq -r --arg name "$packageName" '.["devDependencies"][$name]' package.json)
               echo "Trying to install terminology package '$packageName' in version '$packageVersion' from ZTS registry"
               
               packageFile="${packageName}-${packageVersion}.tgz"
@@ -451,11 +455,11 @@ runs:
               if [[ "$packageDownloadResponseCode" == 2* && -s "$packageFile" ]]; then
                 fhirCacheLocation=$(fhir cache location --path)
                 fhirPackageCacheDest="${fhirCacheLocation}/${packageName}#${packageVersion}"
-                mkdir -p $fhirPackageCacheDest
-                tar -xzf $packageFile -C $fhirPackageCacheDest
+                mkdir -p "$fhirPackageCacheDest"
+                tar -xzf "$packageFile" -C "$fhirPackageCacheDest"
 
                 if [[ ! -d "$fhirPackageCacheDest" ]]; then
-                  echo "Error: Failed to move $extractedFolderForPackage to $fhirPackageCacheDest"
+                  echo "Error: Failed to move $packageFile to $fhirPackageCacheDest"
                   exit 1
                 fi
 
@@ -532,6 +536,60 @@ runs:
       env:
         INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
         INPUT_SUSHI_OPTIONS: ${{ inputs.SUSHI_OPTIONS }}
+
+    # --------------------------------------------------------------------------------------------------- #
+    #                                            Pre-processing                                           #
+    # --------------------------------------------------------------------------------------------------- #
+
+    - name: Pre-processing FHIR profiles (Slicing open-closed)
+      run: |
+        if $CLOSE_SLICING_FOR_VALIDATION; then
+          childProfiles_tmp="$(mktemp)"
+          
+          # Pass 1: collect all baseDefinition URLs (profiles that have children)
+          find "$INPUT_PATH_TO_CONFORMANCE_RESOURCES" -type f -name '*.json' -print |
+          while IFS= read -r f; do
+            rt="$(jq -r '.resourceType // empty' "$f")"
+            [ "$rt" = "StructureDefinition" ] || continue
+          
+            base="$(jq -r '.baseDefinition // empty' "$f")"
+            [ -n "$base" ] && printf '%s\n' "$base"
+          done | sort -u > "$childProfiles_tmp"
+  
+          # Pass 2: close slicings only for child StructureDefinitions -> Prevent "The base snapshot marks a slicing as closed, but the differential tries to extend it" error
+          find "$INPUT_PATH_TO_CONFORMANCE_RESOURCES" -type f -name '*.json' -print |
+          while IFS= read -r f; do
+            rt="$(jq -r '.resourceType // empty' "$f")"
+            [ "$rt" = "StructureDefinition" ] || continue
+          
+            url="$(jq -r '.url // empty' "$f")"
+            [ -n "$url" ] || continue
+          
+            # Skip profiles that are extended by others
+            if grep -Fxq "$url" "$childProfiles_tmp"; then
+              continue
+            fi
+          
+            tmp="${f}.tmp"
+            jq '
+              if .differential?.element then
+                .differential.element |= map(
+                  if .slicing? then
+                    .slicing.rules = "closed"
+                  else
+                    .
+                  end
+                )
+              else
+                .
+              end
+            ' "$f" > "$tmp" && mv "$tmp" "$f"
+          done
+        fi
+      shell: bash
+      env:
+        CLOSE_SLICING_FOR_VALIDATION: ${{ inputs.CLOSE_SLICING_FOR_VALIDATION }}
+        INPUT_PATH_TO_CONFORMANCE_RESOURCES: ${{ inputs.PATH_TO_CONFORMANCE_RESOURCES }}
         
     # --------------------------------------------------------------------------------------------------- #
     #                                            .NET VALIDATOR                                           #
@@ -623,16 +681,6 @@ runs:
       env:
        JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
        JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
-       INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-      
-    - name: Install jq
-      run: |
-        if $INPUT_JAVA_VALIDATION_ENABLED; then 
-          sudo apt-get update > /dev/null
-          sudo apt-get install --no-install-recommends -y jq findutils curl ca-certificates > /dev/null
-        fi
-      shell: bash
-      env:
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
           
     - name: Validate all conformance resources in scope of the repository

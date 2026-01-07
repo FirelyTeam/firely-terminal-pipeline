@@ -87,12 +87,12 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
     default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
- * TERMINOLOGY_SERVICE_BFARM_ENABLED:
-   - description: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
-   - default: false
-   - required: false
- * JAVA_SNAPSHOT_ENABLED:
-   - description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
+ * SUSHI_VERSION:
+   - description: 'Version of SUSHI used for compiling the FSH files'
+   - default: '3.13.1'
+   - required: true
+ * CLOSE_SLICING_FOR_VALIDATION:
+   - description: 'Constrains all defined element slicings to closed, ensuring that instance elements must conform to one of the declared slices. This strengthens validation by preventing acceptance of elements that do not match the defined slicing discriminators.'
    - default: false
    - required: false
 
