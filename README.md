@@ -62,13 +62,24 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - description: 'Boolean flag to run fsh-sushi on the current repository to generated conformance resources based on FHIR shorthand'
    - required: false
    - default: false
+ * SUSHI_VERSION:
+   - description: 'Version of SUSHI used for compiling the FSH files'
+   - default: '3.13.1'
+   - required: true
  * SUSHI_OPTIONS:
    - description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
    - required: false
+ * SUSHI_USE_CONFIG_DEPENDENCIES:
+   - description: 'When SUSHI is enabled, use dependencies from sushi-config.yaml instead of package.json. If sushi-config.yaml exists and package.json does not, this will automatically convert sushi-config.yaml to package.json.'
+   - required: false
+   - default: true
  * FIRELY_TERMINAL_VERSION:
    - description: 'Version of Firely Terminal used for .NET-based validation'
    - default: '3.3.2'
    - required: true
+ * FIRELY_TERMINAL_VALIDATOR_ENGINE:
+   - description: 'Optional: Firely Terminal validator engine to use for .NET validation. From Firely Terminal 3.5.0 onwards, the default validator engine changed. Use "Legacy" to use the old validator engine from pre-3.5.0 versions. Available options: Default, Legacy. If not specified, Firely Terminal uses its built-in default.'
+   - required: false
  * JAVA_VALIDATOR_VERSION:
    - description: 'Version of org.hl7.fhir.core library used for Java-based validation'
    - default: '6.5.2'
@@ -82,7 +93,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - required: true
  * CLOSE_SLICING_FOR_VALIDATION:
    - description: 'Constrains all defined element slicings to closed, ensuring that instance elements must conform to one of the declared slices. This strengthens validation by preventing acceptance of elements that do not match the defined slicing discriminators.'
-    - default: false
+   - default: false
    - required: false
 
 ## Changelog
