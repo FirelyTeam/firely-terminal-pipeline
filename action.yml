@@ -71,7 +71,8 @@ inputs:
     default: false
     required: false
   FIRELY_TERMINAL_VALIDATOR_ENGINE:
-    description: 'Optional: Firely Terminal validator engine to use for .NET validation. From Firely Terminal 3.5.0 onwards, the default validator engine changed. Use "Legacy" to use the old validator engine from pre-3.5.0 versions. Available options: Default, Legacy. If not specified, Firely Terminal uses its built-in default.'
+    description: 'Validator engine to use for .NET validation. The new validator engine is used by default since Firely Terminal 3.5.0. Set to "Legacy" to use the old validator engine from pre-3.5.0 versions if needed. Available options: default, legacy.'
+    default: 'default'
     required: false
 
 # Validate all resources using Firely Terminal 
