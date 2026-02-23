@@ -64,7 +64,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - default: false
  * SUSHI_VERSION:
    - description: 'Version of SUSHI used for compiling the FSH files'
-   - default: '3.13.1'
+   - default: '3.17.0'
    - required: true
  * SUSHI_OPTIONS:
    - description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
@@ -87,10 +87,6 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
     default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
- * SUSHI_VERSION:
-   - description: 'Version of SUSHI used for compiling the FSH files'
-   - default: '3.17.0'
-   - required: true
  * CLOSE_SLICING_FOR_VALIDATION:
    - description: 'Constrains all defined element slicings to closed, ensuring that instance elements must conform to one of the declared slices. This strengthens validation by preventing acceptance of elements that do not match the defined slicing discriminators.'
    - default: false

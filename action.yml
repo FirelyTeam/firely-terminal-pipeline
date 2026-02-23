@@ -72,7 +72,6 @@ inputs:
     required: false
   FIRELY_TERMINAL_VALIDATOR_ENGINE:
     description: 'Validator engine to use for .NET validation. The new validator engine is used by default since Firely Terminal 3.5.0. Set to "netsdk" to use the old validator engine from pre-3.5.0 versions if needed. Available options: firely, netsdk.'
-    default: 'firely'
     required: false
 
 # Validate all resources using Firely Terminal 
@@ -154,8 +153,11 @@ runs:
           # Install yq if we have a sushi-config.yaml file (needed for version detection or conversion)
           echo "Installing yq for YAML processing..."
           
-          # Install yq using the recommended method to ensure compatibility
-          sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          # Install yq with pinned version and SHA-256 checksum verification
+          YQ_VERSION="v4.52.4"
+          YQ_CHECKSUM="0c4d965ea944b64b8fddaf7f27779ee3034e5693263786506ccd1c120f184e8c"
+          sudo wget -qO /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          echo "${YQ_CHECKSUM}  /usr/bin/yq" | sha256sum --check --strict
           sudo chmod +x /usr/bin/yq
           
           echo "Installed yq version: $(yq --version)"
@@ -209,17 +211,10 @@ runs:
             needSushiConversion=true
             echo "Strategy: Auto-converting sushi-config.yaml to package.json (no package.json available)"
           elif [ "$sushiConfigExists" = true ]; then
-            # Use sushi-config.yaml for FHIR version, check if conversion needed for .NET validation
+            # No package.json available, convert sushi-config.yaml so all validators can resolve dependencies
             useSushiConfig=true
-            if $INPUT_DOTNET_VALIDATION_ENABLED; then
-              # .NET validation requires package.json for dependency restoration
-              needSushiConversion=true
-              echo "Strategy: Converting sushi-config.yaml to package.json (.NET validation requires package.json for dependencies)"
-            else
-              # Only Java validation, no package.json needed
-              needSushiConversion=false
-              echo "Strategy: Using sushi-config.yaml for FHIR version only (Java validation only)"
-            fi
+            needSushiConversion=true
+            echo "Strategy: Converting sushi-config.yaml to package.json (required for dependency resolution)"
           else
             echo "ERROR: Neither package.json nor sushi-config.yaml found. At least one is required."
             exit 1
@@ -607,12 +602,21 @@ runs:
     # Set Firely Terminal validator engine (only if specified)
     - name: Configure Firely Terminal validator engine
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED && [ -n "$FIRELY_TERMINAL_VALIDATOR_ENGINE" ]; then
-          echo "Setting Firely Terminal validator engine to: $FIRELY_TERMINAL_VALIDATOR_ENGINE"
-          fhir config validator $FIRELY_TERMINAL_VALIDATOR_ENGINE
-        elif $INPUT_DOTNET_VALIDATION_ENABLED; then
-          echo "Using default Firely Terminal validator engine (no engine specified)"
-        fi
+        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+          if [ -n "$FIRELY_TERMINAL_VALIDATOR_ENGINE" ]; then
+            case "$FIRELY_TERMINAL_VALIDATOR_ENGINE" in
+              firely|netsdk)
+                echo "Setting Firely Terminal validator engine to: $FIRELY_TERMINAL_VALIDATOR_ENGINE"
+                fhir config validator "$FIRELY_TERMINAL_VALIDATOR_ENGINE"
+                ;;
+              *)
+                echo "Error: Invalid FIRELY_TERMINAL_VALIDATOR_ENGINE value: '$FIRELY_TERMINAL_VALIDATOR_ENGINE'. Allowed values are 'firely' or 'netsdk'." >&2
+                exit 1
+                ;;
+            esac
+          else
+            echo "Using default Firely Terminal validator engine (no engine specified)"
+          fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
