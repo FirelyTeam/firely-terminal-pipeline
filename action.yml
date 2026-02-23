@@ -617,6 +617,7 @@ runs:
           else
             echo "Using default Firely Terminal validator engine (no engine specified)"
           fi
+        fi
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
