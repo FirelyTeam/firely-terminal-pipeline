@@ -45,11 +45,11 @@ inputs:
     default: false
   FIRELY_TERMINAL_VERSION:
     description: 'Version of Firely Terminal used for .NET-based validation'
-    default: '3.5.0-beta-1'
+    default: '3.5.0'
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.7.10'
+    default: '6.8.1'
     required: true
   JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
