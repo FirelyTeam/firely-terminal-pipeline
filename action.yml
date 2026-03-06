@@ -148,24 +148,16 @@ runs:
 
     # Install yq for YAML processing (needed for FHIR version detection and SUSHI config conversion)
     - name: Install yq for YAML processing
+      if: hashFiles('sushi-config.yaml') != ''
       run: |
-        if [ -f "sushi-config.yaml" ]; then
-          # Install yq if we have a sushi-config.yaml file (needed for version detection or conversion)
-          echo "Installing yq for YAML processing..."
-          
-          # Install yq with pinned version and SHA-256 checksum verification
-          YQ_VERSION="v4.52.4"
-          YQ_CHECKSUM="0c4d965ea944b64b8fddaf7f27779ee3034e5693263786506ccd1c120f184e8c"
-          sudo wget -qO /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
-          echo "${YQ_CHECKSUM}  /usr/bin/yq" | sha256sum --check --strict
-          sudo chmod +x /usr/bin/yq
-          
-          echo "Installed yq version: $(yq --version)"
-          echo "Testing yq with sushi-config.yaml:"
-          yq eval '.fhirVersion' sushi-config.yaml || echo "yq test failed"
-        else
-          echo "Skipping yq installation (no sushi-config.yaml found)"
+        YQ_VERSION=$(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.tag_name')
+        if [ -z "$YQ_VERSION" ] || [ "$YQ_VERSION" = "null" ]; then
+          echo "ERROR: Failed to determine latest yq version from GitHub API"
+          exit 1
         fi
+        sudo wget -qO /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+        sudo chmod +x /usr/bin/yq
+        echo "Installed yq version: $(yq --version)"
       shell: bash
        
     # Determine FHIR version source and dependency handling strategy
