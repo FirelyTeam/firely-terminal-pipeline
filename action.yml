@@ -87,7 +87,7 @@ runs:
     
     - name: Check if .NET is installed
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED; then
           if ! command -v dotnet &> /dev/null
           then
               echo "dotnet could not be found. Please see actions/setup-dotnet to set it up before running this action."
@@ -97,6 +97,7 @@ runs:
       shell: bash
       env:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED: ${{ inputs.TERMINOLOGY_SERVICE_BFARM_ENABLED }}
         
     # Test Firely SDK version
     - name: Check .NET SDK Version
@@ -112,7 +113,7 @@ runs:
     # Install Firely.Terminal
     - name: Install Firely.Terminal
       run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
+        if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED; then
           if ! command -v fhir &> /dev/null
           then
             dotnet tool install --global Firely.Terminal --version $FIRELY_TERMINAL_VERSION > /dev/null
@@ -122,6 +123,7 @@ runs:
       env:
         FIRELY_TERMINAL_VERSION: ${{ inputs.FIRELY_TERMINAL_VERSION }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED: ${{ inputs.TERMINOLOGY_SERVICE_BFARM_ENABLED }}
       
     # Test Firely.Terminal install
     - name: Check Firely Terminal Version
