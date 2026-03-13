@@ -831,3 +831,19 @@ runs:
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
        INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
        INPUT_JAVA_VALIDATION_OPTIONS: ${{ inputs.JAVA_VALIDATION_OPTIONS }}
+
+    # --------------------------------------------------------------------------------------------------- #
+    #                                          Post-processing                                            #
+    # --------------------------------------------------------------------------------------------------- #
+
+    - name: Re-run SUSHI to restore conformance resources after slicing modification
+      run: |
+        if $CLOSE_SLICING_FOR_VALIDATION && $INPUT_SUSHI_ENABLED; then
+          echo "Re-running SUSHI to restore conformance resources after closing slicing for validation ..."
+          sushi $INPUT_SUSHI_OPTIONS
+        fi
+      shell: bash
+      env:
+        CLOSE_SLICING_FOR_VALIDATION: ${{ inputs.CLOSE_SLICING_FOR_VALIDATION }}
+        INPUT_SUSHI_ENABLED: ${{ inputs.SUSHI_ENABLED }}
+        INPUT_SUSHI_OPTIONS: ${{ inputs.SUSHI_OPTIONS }}
