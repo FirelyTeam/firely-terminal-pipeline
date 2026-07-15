@@ -49,14 +49,14 @@ inputs:
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '6.9.6'
+    default: '6.9.12'
     required: true
   JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
     default: 'https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$JAVA_VALIDATOR_VERSION/validator_cli.jar'
   SUSHI_VERSION:
     description: 'Version of SUSHI used for compiling the FSH files'
-    default: '3.19.0'
+    default: '3.20.0'
     required: true
   TERMINOLOGY_SERVICE_BFARM_ENABLED:
     description: 'Enables downloading packages from the central terminology server for Germany (https://terminologien.bfarm.de/fhirpackages.html)'
