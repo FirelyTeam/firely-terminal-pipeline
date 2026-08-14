@@ -417,6 +417,15 @@ runs:
               exit 0
             fi
 
+            # ignore KDL - no Download conditions
+            packageToRemove="dvmd.kdl.r4"
+            newPackages=()
+            for package in "${validPackages[@]}"; do 
+              [[ "$package" != "$packageToRemove" ]] && newPackages+=("$package")
+            done
+            # Overwrite result
+            validPackages=("${newPackages[@]}")
+            
             packagesForZtsToken="{\"packages\": [$(IFS=,; echo "${validPackages[*]}")]}"
           
             ztsTokenResponse=$(curl -s -w "\n%{http_code}" \
