@@ -479,9 +479,8 @@ runs:
                 echo "Successfully installed terminology package '$packageName' in version '$packageVersion' from ZTS registry"
                 
               else
-                echo "Failed to download terminology package '$packageName' in version '$packageVersion'."
-                [[ -e "$packageFile" ]] && rm "$packageFile"
-                exit 1
+                echo "WARNING: Failed to download terminology package '$packageName' in version '$packageVersion'."
+                [[ -e "$packageFile" ]] && rm -f "$packageFile"
               fi
             done
           
