@@ -417,14 +417,20 @@ runs:
               exit 0
             fi
 
-            # ignore KDL - no Download conditions
-            packageToRemove="dvmd.kdl.r4"
+            echo "### Removing packages without download conditions from the list of packages to be downloaded from ZTS"
+            packagesWithoutDownloadConditions=("\"dvmd.kdl.r4\"")
             newPackages=()
-            for package in "${validPackages[@]}"; do 
-              [[ "$package" != "$packageToRemove" ]] && newPackages+=("$package")
+            for package in "${validPackages[@]}"; do
+              for packageToRemove in "${packagesWithoutDownloadConditions[@]}"; do
+                [[ "$package" != "$packageToRemove" ]] && newPackages+=("$package")
+              done
             done
             # Overwrite result
             validPackages=("${newPackages[@]}")
+          
+            for packageName in "${validPackages[@]}"; do
+              echo "### Packages to get a token for: $packageName"
+            done
             
             packagesForZtsToken="{\"packages\": [$(IFS=,; echo "${validPackages[*]}")]}"
           
