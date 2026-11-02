@@ -13,6 +13,21 @@ You can add a badge to your repository with the current pipeline status:
 * Select the three dots and click 'Create status badge'
 * Paste this code in the beginning of your `README.md` file.
 
+## Prerequisites
+
+The action does not install .NET itself. When `DOTNET_VALIDATION_ENABLED` or `TERMINOLOGY_SERVICE_BFARM_ENABLED` is set, the .NET SDK must be installed earlier in your workflow, for example with [actions/setup-dotnet](https://github.com/actions/setup-dotnet).
+
+Firely Terminal 4.x (the default `FIRELY_TERMINAL_VERSION`) requires the **.NET 10 SDK**:
+
+```yaml
+- name: Setup .NET SDK
+  uses: actions/setup-dotnet@v6
+  with:
+    dotnet-version: 10.0.x
+```
+
+If your workflow still sets up .NET 8 (`dotnet-version: 8.0.x`), installing Firely Terminal 4.x will fail. Either switch to `10.0.x`, or pin `FIRELY_TERMINAL_VERSION: '3.5.0'`, which is the last version that runs on .NET 8.
+
 ## Input (FHIR Conformance resources)
 
 The Firely Terminal Pipeline allows to validate all FHIR conformnce resources and corresponding examples.
@@ -74,8 +89,8 @@ You can specify the following options using the ["with" syntax](https://docs.git
    - required: false
    - default: true
  * FIRELY_TERMINAL_VERSION:
-   - description: 'Version of Firely Terminal used for .NET-based validation'
-   - default: '3.5.0'
+   - description: 'Version of Firely Terminal used for .NET-based validation. Firely Terminal 4.x requires the .NET 10 SDK; use 3.5.0 if you need to stay on .NET 8. See [Prerequisites](#prerequisites).'
+   - default: '4.0.0'
    - required: true
  * FIRELY_TERMINAL_VALIDATOR_ENGINE:
    - description: 'Optional: Firely Terminal validator engine to use for .NET validation. From Firely Terminal 3.5.0 onwards, the default validator engine changed. Use "netsdk" to use the old validator engine from pre-3.5.0 versions. Available options: Firely, netsdk. If not specified, Firely Terminal uses its built-in default.'
