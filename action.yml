@@ -40,12 +40,12 @@ inputs:
     description: 'Custom options passed to SUSHI. See https://www.npmjs.com/package/fsh-sushi'
     required: false
   SUSHI_USE_CONFIG_DEPENDENCIES:
-    description: 'When both sushi-config.yaml and package.json exist, set this to true to use sushi-config.yaml as the source-of-truth for dependencies instead of package.json. When false (default), package.json takes precedence if it exists. If only one file exists, that file is used regardless of this setting.'
+    description: 'Source of the FHIR version and dependencies. When true, package.json is generated from sushi-config.yaml, overwriting an existing package.json; the action fails if sushi-config.yaml does not exist. When false (default), an existing package.json is used; if there is no package.json, it is generated from sushi-config.yaml.'
     required: false
     default: false
   FIRELY_TERMINAL_VERSION:
     description: 'Version of Firely Terminal used for .NET-based validation'
-    default: '3.5.0'
+    default: '4.0.0'
     required: true
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
@@ -63,7 +63,7 @@ inputs:
     default: false
     required: false
   JAVA_SNAPSHOT_ENABLED:
-    description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the ZTS_ENABLED setting.'
+    description: 'Enables creating snapshots for the package dependencies using the Java validator. Snapshots created by Firely Terminal will be disregarded. Does not yet work together with the TERMINOLOGY_SERVICE_BFARM_ENABLED setting.'
     default: false
     required: false
   CLOSE_SLICING_FOR_VALIDATION:
@@ -284,7 +284,7 @@ runs:
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
           # Define supported FHIR versions
-          supportedVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0" "5.0.0")
+          supportedVersions=("3.0.2" "4.0.1" "4.1.0" "4.3.0" "4.6.0" "5.0.0")
           
           # Check if detected version is supported
           supportedVersion=false
@@ -299,9 +299,9 @@ runs:
             echo "FHIR version $FHIR_VERSION is supported by this action"
           else
             echo "WARNING: FHIR version $FHIR_VERSION is not officially supported by this action."
-            echo "Supported versions are: 3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0"
+            echo "Supported versions are: 3.0.2, 4.0.1, 4.1.0, 4.3.0, 4.6.0, 5.0.0"
             echo "The action will continue but may encounter issues during validation."
-            echo "::warning::FHIR version $FHIR_VERSION is not officially supported. Supported versions: 3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0"
+            echo "::warning::FHIR version $FHIR_VERSION is not officially supported. Supported versions: 3.0.2, 4.0.1, 4.1.0, 4.3.0, 4.6.0, 5.0.0"
           fi
         else
           echo "Skipping FHIR version validation (no validation enabled)"
@@ -367,6 +367,8 @@ runs:
           elif [[ "$FHIR_VERSION" = "4.0.1" ]]; then
             fhir spec R4
           elif [[ "$FHIR_VERSION" = "4.1.0" ]]; then
+            fhir spec R4B
+          elif [[ "$FHIR_VERSION" = "4.3.0" ]]; then
             fhir spec R4B
           elif [[ "$FHIR_VERSION" = "4.6.0" ]]; then
             fhir spec R5
@@ -723,6 +725,7 @@ runs:
             "3.0.2") CORE_FHIR_PACKAGE="hl7.fhir.r3.core" ;;
             "4.0.1") CORE_FHIR_PACKAGE="hl7.fhir.r4.core" ;;
             "4.1.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
+            "4.3.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
             "4.6.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             "5.0.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             *) CORE_FHIR_PACKAGE="" ;;
@@ -795,6 +798,7 @@ runs:
             "3.0.2") CORE_FHIR_PACKAGE="hl7.fhir.r3.core" ;;
             "4.0.1") CORE_FHIR_PACKAGE="hl7.fhir.r4.core" ;;
             "4.1.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
+            "4.3.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
             "4.6.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             "5.0.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             *) CORE_FHIR_PACKAGE="" ;;
