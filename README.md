@@ -49,7 +49,7 @@ It expects the following content to be present:
 * One or more folders containing all conformance resources, such as StructureDefinitions, ValueSets and CodeSystems (see `PATH_TO_CONFORMANCE_RESOURCES`)
 * One or more folders containing all examples (optional, see `PATH_TO_EXAMPLES`)
 
-Supported FHIR versions are 3.0.2, 4.0.1, 4.1.0, 4.6.0 and 5.0.0. For other versions the action logs a warning, and .NET validation stops with an error.
+Supported FHIR versions are 3.0.2 (STU3), 4.0.1 (R4), 4.3.0 (R4B), 5.0.0 (R5), and the ballot versions 4.1.0 (R4B) and 4.6.0 (R5). For other versions the action logs a warning, and .NET validation stops with an error.
 
 ## Options
 
@@ -128,6 +128,7 @@ Release notes for v0.6.1 and later are published on the [Releases page](https://
 ### Next release
 
 - Breaking: Upgrade Firely Terminal to v4.0.0, which requires the .NET 10 SDK. Update `dotnet-version` in your `actions/setup-dotnet` step to `10.0.x`, or pin `FIRELY_TERMINAL_VERSION: '3.5.0'` to stay on .NET 8. See [.NET version](#net-version).
+- Fix: Support FHIR 4.3.0 (R4B release). Previously only the R4B ballot version 4.1.0 was recognized, so .NET validation of R4B projects failed.
 
 ### v0.6.0 - 2025-01-01
 

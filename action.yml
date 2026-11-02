@@ -284,7 +284,7 @@ runs:
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED || $INPUT_JAVA_VALIDATION_ENABLED; then
           # Define supported FHIR versions
-          supportedVersions=("3.0.2" "4.0.1" "4.1.0" "4.6.0" "5.0.0")
+          supportedVersions=("3.0.2" "4.0.1" "4.1.0" "4.3.0" "4.6.0" "5.0.0")
           
           # Check if detected version is supported
           supportedVersion=false
@@ -299,9 +299,9 @@ runs:
             echo "FHIR version $FHIR_VERSION is supported by this action"
           else
             echo "WARNING: FHIR version $FHIR_VERSION is not officially supported by this action."
-            echo "Supported versions are: 3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0"
+            echo "Supported versions are: 3.0.2, 4.0.1, 4.1.0, 4.3.0, 4.6.0, 5.0.0"
             echo "The action will continue but may encounter issues during validation."
-            echo "::warning::FHIR version $FHIR_VERSION is not officially supported. Supported versions: 3.0.2, 4.0.1, 4.1.0, 4.6.0, 5.0.0"
+            echo "::warning::FHIR version $FHIR_VERSION is not officially supported. Supported versions: 3.0.2, 4.0.1, 4.1.0, 4.3.0, 4.6.0, 5.0.0"
           fi
         else
           echo "Skipping FHIR version validation (no validation enabled)"
@@ -367,6 +367,8 @@ runs:
           elif [[ "$FHIR_VERSION" = "4.0.1" ]]; then
             fhir spec R4
           elif [[ "$FHIR_VERSION" = "4.1.0" ]]; then
+            fhir spec R4B
+          elif [[ "$FHIR_VERSION" = "4.3.0" ]]; then
             fhir spec R4B
           elif [[ "$FHIR_VERSION" = "4.6.0" ]]; then
             fhir spec R5
@@ -723,6 +725,7 @@ runs:
             "3.0.2") CORE_FHIR_PACKAGE="hl7.fhir.r3.core" ;;
             "4.0.1") CORE_FHIR_PACKAGE="hl7.fhir.r4.core" ;;
             "4.1.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
+            "4.3.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
             "4.6.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             "5.0.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             *) CORE_FHIR_PACKAGE="" ;;
@@ -795,6 +798,7 @@ runs:
             "3.0.2") CORE_FHIR_PACKAGE="hl7.fhir.r3.core" ;;
             "4.0.1") CORE_FHIR_PACKAGE="hl7.fhir.r4.core" ;;
             "4.1.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
+            "4.3.0") CORE_FHIR_PACKAGE="hl7.fhir.r4b.core" ;;
             "4.6.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             "5.0.0") CORE_FHIR_PACKAGE="hl7.fhir.r5.core" ;;
             *) CORE_FHIR_PACKAGE="" ;;
