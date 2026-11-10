@@ -700,7 +700,7 @@ runs:
 
     - name: Upload Quality Control report
       if: always() && steps.qc.outputs.report != ''
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.REPORT_ARTIFACT_NAME }}
         path: ${{ runner.temp }}/fhir-check/
