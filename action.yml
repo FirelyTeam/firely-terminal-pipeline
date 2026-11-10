@@ -47,6 +47,10 @@ inputs:
     description: 'Version of Firely Terminal used for .NET-based validation'
     default: '4.0.0'
     required: true
+  FHIR_PACKAGE_CACHE_ENABLED:
+    description: 'Boolean flag to cache the FHIR packages restored by Firely Terminal between runs. In a public repository, workflows from fork pull requests can read this cache, so do not enable it when the packages include private Simplifier or ZTS packages.'
+    required: false
+    default: false
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
     default: '7.0.5'
@@ -360,7 +364,7 @@ runs:
     # Reuse the FHIR packages downloaded by an earlier run, so fhir spec and fhir restore don't download them again
     - name: Determine FHIR package cache key
       id: fhir-package-cache
-      if: inputs.DOTNET_VALIDATION_ENABLED == 'true'
+      if: inputs.DOTNET_VALIDATION_ENABLED == 'true' && inputs.FHIR_PACKAGE_CACHE_ENABLED == 'true'
       run: |
         # current, dev, latest and version ranges resolve to new content over time; a cache keyed on package.json would never refresh them
         volatileDependencies=$(jq -r '(.dependencies // {}), (.devDependencies // {}) | to_entries[] | select(.value | test("^(current|dev|latest)|[*^~<>| ]|(^|[.])x([.]|$)")) | .key + "#" + .value' package.json)
