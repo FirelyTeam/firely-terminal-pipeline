@@ -363,13 +363,15 @@ runs:
       if: inputs.DOTNET_VALIDATION_ENABLED == 'true'
       run: |
         # current, dev, latest and version ranges resolve to new content over time; a cache keyed on package.json would never refresh them
-        volatileDependencies=$(jq -r '((.dependencies // {}) + (.devDependencies // {})) | to_entries[] | select(.value | test("^(current|dev|latest)|[*^~<>| ]|(^|[.])x([.]|$)")) | .key + "#" + .value' package.json)
+        volatileDependencies=$(jq -r '(.dependencies // {}), (.devDependencies // {}) | to_entries[] | select(.value | test("^(current|dev|latest)|[*^~<>| ]|(^|[.])x([.]|$)")) | .key + "#" + .value' package.json)
         if [[ -n "$volatileDependencies" ]]; then
           echo "Not caching FHIR packages, these dependencies have no fixed version: $(echo $volatileDependencies)"
           exit 0
         fi
         echo "path=$(fhir cache location --path)" >> "$GITHUB_OUTPUT"
-        echo "key=fhir-packages-${RUNNER_OS}-ft${FIRELY_TERMINAL_VERSION}-zts${INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED}-$(sha256sum package.json | cut -c1-16)" >> "$GITHUB_OUTPUT"
+        # The installed version, not the input: an fhir already on the runner is reused whatever FIRELY_TERMINAL_VERSION says
+        installedFirelyTerminalVersion=$(fhir -v | awk '/^Firely Terminal/ {print $3}')
+        echo "key=fhir-packages-${RUNNER_OS}-ft${installedFirelyTerminalVersion:-$FIRELY_TERMINAL_VERSION}-zts${INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED}-$(sha256sum package.json | cut -c1-16)" >> "$GITHUB_OUTPUT"
       shell: bash
       env:
         FIRELY_TERMINAL_VERSION: ${{ inputs.FIRELY_TERMINAL_VERSION }}
