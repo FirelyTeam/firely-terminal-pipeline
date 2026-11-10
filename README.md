@@ -129,7 +129,7 @@ With Firely Terminal 4.0.0 or later, the Quality Control results are saved as a 
 - **Annotations**: each error and warning appears as an annotation on the run (and on the PR's "Files changed" tab where the file can be matched).
 - **Artifact** (`REPORT_ARTIFACT_NAME`): `validation.json` (the OperationOutcome bundle) and `validation-summary.md` (the same table as markdown, e.g. to post as a PR comment).
 
-Java validator results are only written to the log.
+The action does not render Java validator results. To save them to a file, add `-output <file>` to `JAVA_VALIDATION_OPTIONS`. The Java validator runs once per folder, so with more than one folder each run overwrites the same file.
 
 ## Known Issues
 - Examples in `PATH_TO_EXAMPLES` are not validated by the .NET validator, because Firely Terminal Quality Control can't distinguish examples from conformance resources. Enable `JAVA_VALIDATION_ENABLED` to validate examples.
