@@ -656,6 +656,7 @@ runs:
 
           REPORT="$RUNNER_TEMP/fhir-check/validation.json"
           mkdir -p "$(dirname "$REPORT")"
+          rm -f -- "$REPORT" "$RUNNER_TEMP/fhir-check/validation-summary.md"
 
           # Firely Terminal < 4.0.0 has no --failOn/--output: fall back to --fail and skip the report
           if fhir check --help | grep -q -- '--failOn'; then
