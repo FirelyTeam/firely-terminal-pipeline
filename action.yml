@@ -81,6 +81,10 @@ inputs:
     description: 'Name of the artifact holding the Firely Terminal Quality Control report (Bundle of OperationOutcomes + markdown summary). Must be unique per workflow run, e.g. when using a matrix.'
     default: 'fhir-validation-report'
     required: false
+  REPORT_RENDERER_ENABLED:
+    description: 'Boolean flag to render the Firely Terminal Quality Control report as annotations and a job summary table using patrick-werner/validation-outcome-markdown-renderer. When false, only the report artifact (validation.json) is uploaded.'
+    required: false
+    default: true
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -685,7 +689,7 @@ runs:
     # Renders the OperationOutcomes as annotations and a table on the job summary page.
     # continue-on-error: the renderer fails on any error by design; pass/fail is decided by DOTNET_FAIL_ON above.
     - name: Render Quality Control report
-      if: always() && steps.qc.outputs.report != ''
+      if: always() && steps.qc.outputs.report != '' && inputs.REPORT_RENDERER_ENABLED == 'true'
       continue-on-error: true
       uses: patrick-werner/validation-outcome-markdown-renderer@09f430c50c24c4d8666158efa4922dd300de6b1b # v1.5.0
       with:
