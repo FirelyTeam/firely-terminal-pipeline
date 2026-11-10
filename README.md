@@ -88,6 +88,8 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * `FIRELY_TERMINAL_VERSION` (default: `'4.0.0'`)
     - Version of Firely Terminal used for .NET-based validation. Firely Terminal 4.x requires the .NET 10 SDK; use `3.5.0` if you need to stay on .NET 8. See [.NET version](#net-version).
     - If a `fhir` command is already available on the runner, that installation is used and this option is ignored.
+* `FHIR_PACKAGE_CACHE_ENABLED` (optional, default: `false`)
+    - Cache the FHIR packages restored by Firely Terminal between runs. See [Caching](#caching).
 * `FIRELY_TERMINAL_VALIDATOR_ENGINE` (optional)
     - Validator engine to use for .NET validation. Available options: `firely`, `netsdk` (lowercase). From Firely Terminal 3.5.0 onwards, the default validator engine changed; use `netsdk` to use the old validator engine from pre-3.5.0 versions. If not specified, Firely Terminal uses its built-in default.
 * `DOTNET_FAIL_ON` (optional, default: `error`)
@@ -123,6 +125,16 @@ You can specify the following options using the ["with" syntax](https://docs.git
         - `true`: a `package.json` is generated from `sushi-config.yaml`, overwriting an existing `package.json`. The action fails if there is no `sushi-config.yaml`.
         - `false`: an existing `package.json` is used. If there is no `package.json`, one is generated from `sushi-config.yaml`.
 
+## Caching
+
+Set `FHIR_PACKAGE_CACHE_ENABLED: true` to keep the Firely Terminal package cache (`~/.fhir/packages`) in a [GitHub Actions cache](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching), so later runs and other jobs in the same repository don't download the packages again.
+
+> [!WARNING]
+> In a public repository, anyone who opens a pull request from a fork can change the workflow and read this cache. Fork pull requests don't get your secrets, but the cache isn't protected by them. Don't enable caching when your dependencies include private Simplifier packages or ZTS packages (`TERMINOLOGY_SERVICE_BFARM_ENABLED`).
+
+- The cache is keyed on `package.json`, the installed Firely Terminal version and `TERMINOLOGY_SERVICE_BFARM_ENABLED`. It is only used when the .NET validator is enabled. It is not used when a dependency has no fixed version (`current`, `dev`, `latest` or a version range), because those change over time.
+- To force a fresh download, delete the cache under **Actions > Caches** in your repository.
+
 ## Reports
 
 With Firely Terminal 4.0.0 or later, the Quality Control results are saved as a Bundle of OperationOutcomes and shown in three places, also when the check fails:
@@ -155,6 +167,7 @@ Release notes for v0.6.1 and later are published on the [Releases page](https://
 
 ### Next release
 
+- Feature: `FHIR_PACKAGE_CACHE_ENABLED` caches the FHIR packages between runs. See [Caching](#caching).
 - Breaking: Upgrade Firely Terminal to v4.0.0, which requires the .NET 10 SDK. Update `dotnet-version` in your `actions/setup-dotnet` step to `10.0.x`, or pin `FIRELY_TERMINAL_VERSION: '3.5.0'` to stay on .NET 8. See [.NET version](#net-version).
 - New: Firely Terminal Quality Control results are published as a job summary, annotations and a downloadable artifact. See [Reports](#reports). Set `REPORT_RENDERER_ENABLED: false` to skip the summary and annotations.
 - New: `DOTNET_FAIL_ON` sets the issue severity that fails the build (uses `fhir check --failOn`, which replaces the deprecated `--fail`).
