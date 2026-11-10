@@ -90,6 +90,10 @@ You can specify the following options using the ["with" syntax](https://docs.git
     - If a `fhir` command is already available on the runner, that installation is used and this option is ignored.
 * `FIRELY_TERMINAL_VALIDATOR_ENGINE` (optional)
     - Validator engine to use for .NET validation. Available options: `firely`, `netsdk` (lowercase). From Firely Terminal 3.5.0 onwards, the default validator engine changed; use `netsdk` to use the old validator engine from pre-3.5.0 versions. If not specified, Firely Terminal uses its built-in default.
+* `DOTNET_FAIL_ON` (optional, default: `error`)
+    - Lowest severity of a Quality Control issue that fails the build: `error`, `warning` or `info`. Ignored when `EXPECTED_FAILS` contains `VALIDATION_CONFORMANCE_DOTNET`. Requires Firely Terminal 4.0.0 or later; older versions always fail on errors.
+* `REPORT_ARTIFACT_NAME` (optional, default: `fhir-validation-report`)
+    - Name of the artifact holding the Quality Control report, see [Reports](#reports). Must be unique within a workflow run, so set it per job when you use the action more than once (e.g. in a matrix).
 * `TERMINOLOGY_SERVICE_BFARM_ENABLED` (optional, default: `false`)
     - Download terminology packages from the central terminology server for Germany ([ZTS](https://terminologien.bfarm.de/fhirpackages.html)). Packages listed under `devDependencies` in `package.json` that exist in the ZTS catalog are downloaded into the Firely Terminal package cache. Requires the .NET SDK.
 
@@ -117,6 +121,16 @@ You can specify the following options using the ["with" syntax](https://docs.git
         - `true`: a `package.json` is generated from `sushi-config.yaml`, overwriting an existing `package.json`. The action fails if there is no `sushi-config.yaml`.
         - `false`: an existing `package.json` is used. If there is no `package.json`, one is generated from `sushi-config.yaml`.
 
+## Reports
+
+With Firely Terminal 4.0.0 or later, the Quality Control results are saved as a Bundle of OperationOutcomes and shown in three places, also when the check fails:
+
+- **Job summary**: a table of errors and warnings on the workflow run's Summary page, rendered by [validation-outcome-markdown-renderer](https://github.com/patrick-werner/validation-outcome-markdown-renderer).
+- **Annotations**: each error and warning appears as an annotation on the run (and on the PR's "Files changed" tab where the file can be matched).
+- **Artifact** (`REPORT_ARTIFACT_NAME`): `validation.json` (the OperationOutcome bundle) and `validation-summary.md` (the same table as markdown, e.g. to post as a PR comment).
+
+Java validator results are only written to the log.
+
 ## Known Issues
 - Examples in `PATH_TO_EXAMPLES` are not validated by the .NET validator, because Firely Terminal Quality Control can't distinguish examples from conformance resources. Enable `JAVA_VALIDATION_ENABLED` to validate examples.
 - The Java validator validates each folder in `PATH_TO_CONFORMANCE_RESOURCES` and `PATH_TO_EXAMPLES` separately (with all conformance resource folders loaded as context). Only `.json` and `.xml` files directly in these folders are validated; subfolders are not included.
@@ -128,6 +142,9 @@ Release notes for v0.6.1 and later are published on the [Releases page](https://
 ### Next release
 
 - Breaking: Upgrade Firely Terminal to v4.0.0, which requires the .NET 10 SDK. Update `dotnet-version` in your `actions/setup-dotnet` step to `10.0.x`, or pin `FIRELY_TERMINAL_VERSION: '3.5.0'` to stay on .NET 8. See [.NET version](#net-version).
+- New: Firely Terminal Quality Control results are published as a job summary, annotations and a downloadable artifact. See [Reports](#reports).
+- New: `DOTNET_FAIL_ON` sets the issue severity that fails the build (uses `fhir check --failOn`, which replaces the deprecated `--fail`).
+- Fix: A failing `fhir restore` now fails the action. With Firely Terminal 4.0.0 the old check for the text "Cannot restore" no longer matched, so restore errors were ignored.
 - Fix: Support FHIR 4.3.0 (R4B release). Previously only the R4B ballot version 4.1.0 was recognized, so .NET validation of R4B projects failed.
 
 ### v0.6.0 - 2025-01-01

@@ -73,6 +73,14 @@ inputs:
   FIRELY_TERMINAL_VALIDATOR_ENGINE:
     description: 'Validator engine to use for .NET validation. The new validator engine is used by default since Firely Terminal 3.5.0. Set to "netsdk" to use the old validator engine from pre-3.5.0 versions if needed. Available options: firely, netsdk.'
     required: false
+  DOTNET_FAIL_ON:
+    description: 'Lowest issue severity found by Firely Terminal Quality Control that fails the build. Allowed values: error, warning, info.'
+    default: 'error'
+    required: false
+  REPORT_ARTIFACT_NAME:
+    description: 'Name of the artifact holding the Firely Terminal Quality Control report (Bundle of OperationOutcomes + markdown summary). Must be unique per workflow run, e.g. when using a matrix.'
+    default: 'fhir-validation-report'
+    required: false
 
 # Validate all resources using Firely Terminal 
 runs:
@@ -381,12 +389,7 @@ runs:
           
           echo "Attempting to restore package dependencies based on package.json ..."
           fhir config regenerate on
-          FHIR_RESTORE=$((fhir restore | tr '\n' ' ')|| true)  # Print everything in a single line
-          if [[ "$FHIR_RESTORE" == *"Cannot restore"* ]]; then
-            echo $FHIR_RESTORE
-            exit 1
-          fi
-          echo "Restore of package.json was successful: $FHIR_RESTORE"
+          fhir restore  # Firely Terminal 4.0.0+ exits non-zero when a dependency cannot be restored
         else
           echo "Skipping Firely Terminal package restore (not needed for current validation setup)"
         fi
@@ -634,31 +637,69 @@ runs:
         FIRELY_TERMINAL_VALIDATOR_ENGINE: ${{ inputs.FIRELY_TERMINAL_VALIDATOR_ENGINE }}
 
     # Run Quality Control checks incl. validation
+    # Writes the issues as a Bundle of OperationOutcomes to $RUNNER_TEMP (outside the workspace, so later validation steps don't pick it up)
     - name: Run Quality Control checks
+      id: qc
       run: |
         if $INPUT_DOTNET_VALIDATION_ENABLED; then
-          echo "Running quality control checks incl. validation based on Firely Terminal ..."
-          if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
-            fhir check $INPUT_PATH_TO_QUALITY_CONTROL_RULES
+          case "$INPUT_DOTNET_FAIL_ON" in
+            error|warning|info) ;;
+            *)
+              echo "Error: Invalid DOTNET_FAIL_ON value: '$INPUT_DOTNET_FAIL_ON'. Allowed values are 'error', 'warning' or 'info'." >&2
+              exit 1
+              ;;
+          esac
+
+          REPORT="$RUNNER_TEMP/fhir-check/validation.json"
+          mkdir -p "$(dirname "$REPORT")"
+
+          # Firely Terminal < 4.0.0 has no --failOn/--output: fall back to --fail and skip the report
+          if fhir check --help | grep -q -- '--failOn'; then
+            CHECK_ARGS="--output $REPORT --failOn $INPUT_DOTNET_FAIL_ON"
+            NO_FAIL_ARGS="--output $REPORT"
           else
-            fhir check --fail $INPUT_PATH_TO_QUALITY_CONTROL_RULES
+            echo "::warning::Firely Terminal < 4.0.0 detected: DOTNET_FAIL_ON is ignored and no report is generated."
+            CHECK_ARGS="--fail"
+            NO_FAIL_ARGS=""
           fi
+          if echo $INPUT_EXPECTED_FAILS | grep -w -q VALIDATION_CONFORMANCE_DOTNET; then
+            CHECK_ARGS="$NO_FAIL_ARGS"
+          fi
+
+          echo "Running quality control checks incl. validation based on Firely Terminal ..."
+          set +e
+          fhir check $INPUT_PATH_TO_QUALITY_CONTROL_RULES $CHECK_ARGS
+          rc=$?
+          set -e
+
+          if [ -f "$REPORT" ]; then echo "report=$REPORT" >> "$GITHUB_OUTPUT"; fi
+          exit $rc
         fi
       shell: bash
       env:
         INPUT_EXPECTED_FAILS: ${{ inputs.EXPECTED_FAILS }}
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
+        INPUT_DOTNET_FAIL_ON: ${{ inputs.DOTNET_FAIL_ON }}
         INPUT_PATH_TO_QUALITY_CONTROL_RULES: ${{ inputs.PATH_TO_QUALITY_CONTROL_RULES }}
-        
-    - name: Report Success - .NET Validator
-      run: |
-        if $INPUT_DOTNET_VALIDATION_ENABLED; then
-          echo "Finished validation using .NET validator (Conformance resources) ..."
-        fi
-      shell: bash
-      env:
-        INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
-      
+
+    # Renders the OperationOutcomes as annotations and a table on the job summary page.
+    # continue-on-error: the renderer fails on any error by design; pass/fail is decided by DOTNET_FAIL_ON above.
+    - name: Render Quality Control report
+      if: always() && steps.qc.outputs.report != ''
+      continue-on-error: true
+      uses: patrick-werner/validation-outcome-markdown-renderer@09f430c50c24c4d8666158efa4922dd300de6b1b # v1.5.0
+      with:
+        bundle-file: ${{ steps.qc.outputs.report }}
+        include: warnings
+        pr-summary-path: ${{ runner.temp }}/fhir-check/validation-summary.md
+
+    - name: Upload Quality Control report
+      if: always() && steps.qc.outputs.report != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.REPORT_ARTIFACT_NAME }}
+        path: ${{ runner.temp }}/fhir-check/
+
     #Examples are currently not used as Firely Terminal can't differentiate between these two in QC checks.
     
     # --------------------------------------------------------------------------------------------------- #
