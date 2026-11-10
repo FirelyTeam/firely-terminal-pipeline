@@ -95,7 +95,7 @@ You can specify the following options using the ["with" syntax](https://docs.git
 * `REPORT_ARTIFACT_NAME` (optional, default: `fhir-validation-report`)
     - Name of the artifact holding the Quality Control report, see [Reports](#reports). Must be unique within a workflow run, so set it per job when you use the action more than once (e.g. in a matrix).
 * `REPORT_RENDERER_ENABLED` (optional, default: `true`)
-    - Render the Quality Control report as annotations and a job summary table, using the third-party action [validation-outcome-markdown-renderer](https://github.com/patrick-werner/validation-outcome-markdown-renderer). Set to `false` if you don't want that action to run, for example because your organization only allows approved actions. The artifact then only holds `validation.json`.
+    - Render the Quality Control report as annotations and a job summary table, using the third-party action [validation-outcome-markdown-renderer](https://github.com/patrick-werner/validation-outcome-markdown-renderer). Set to `false` to skip it; the artifact then only holds `validation.json`. GitHub still downloads the renderer when the job starts, so this does not help if your organization's allowed-actions policy blocks it.
 * `TERMINOLOGY_SERVICE_BFARM_ENABLED` (optional, default: `false`)
     - Download terminology packages from the central terminology server for Germany ([ZTS](https://terminologien.bfarm.de/fhirpackages.html)). Packages listed under `devDependencies` in `package.json` that exist in the ZTS catalog are downloaded into the Firely Terminal package cache. Requires the .NET SDK.
 
