@@ -133,7 +133,7 @@ With Firely Terminal 4.0.0 or later, the Quality Control results are saved as a 
 
 Set `REPORT_RENDERER_ENABLED: false` to skip the job summary and annotations; the artifact then only holds `validation.json`.
 
-To suppress known issues, add a `suppress` list to the rule in your `.rules.yaml`. Suppressed issues don't fail the build and don't appear in the report. An entry is an issue code (the `details.coding` code in `validation.json`, e.g. `6006`, or a constraint key such as `eld-16`), `system|code`, or `system|` for all codes of a system. Suppression applies to every resource the rule checks; to suppress an issue for some files only, give those files a separate rule using `files` (glob patterns) or `filter` (FHIRPath).
+To suppress known issues, add a `suppress` list to the rule in your `.rules.yaml` (see [Suppress](https://docs.fire.ly/projects/Simplifier/quality_control/actions.html#suppress) in the [Quality Control documentation](https://docs.fire.ly/projects/Simplifier/quality_control/quality_control.html)). Suppressed issues don't fail the build and don't appear in the report. An entry is an issue code (the `details.coding` code in `validation.json`, e.g. `6006`, or a constraint key such as `eld-16`), `system|code`, or `system|` for all codes of a system. Suppression applies to every resource the rule checks; to suppress an issue for some files only, give those files a separate rule using `files` (glob patterns) or `filter` (FHIRPath).
 
 ```yaml
 - action: validate
