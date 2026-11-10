@@ -357,6 +357,32 @@ runs:
         FHIR_VERSION: ${{ env.FHIR_VERSION }}
       
 
+    # Reuse the FHIR packages downloaded by an earlier run, so fhir spec and fhir restore don't download them again
+    - name: Determine FHIR package cache key
+      id: fhir-package-cache
+      if: inputs.DOTNET_VALIDATION_ENABLED == 'true'
+      run: |
+        # current, dev, latest and version ranges resolve to new content over time; a cache keyed on package.json would never refresh them
+        volatileDependencies=$(jq -r '((.dependencies // {}) + (.devDependencies // {})) | to_entries[] | select(.value | test("^(current|dev|latest)|[*^~<>| ]|(^|[.])x([.]|$)")) | .key + "#" + .value' package.json)
+        if [[ -n "$volatileDependencies" ]]; then
+          echo "Not caching FHIR packages, these dependencies have no fixed version: $(echo $volatileDependencies)"
+          exit 0
+        fi
+        echo "path=$(fhir cache location --path)" >> "$GITHUB_OUTPUT"
+        echo "key=fhir-packages-${RUNNER_OS}-ft${FIRELY_TERMINAL_VERSION}-zts${INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED}-$(sha256sum package.json | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      shell: bash
+      env:
+        FIRELY_TERMINAL_VERSION: ${{ inputs.FIRELY_TERMINAL_VERSION }}
+        INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED: ${{ inputs.TERMINOLOGY_SERVICE_BFARM_ENABLED }}
+
+    - name: Restore FHIR package cache
+      id: fhir-package-cache-restore
+      if: steps.fhir-package-cache.outputs.key != ''
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.fhir-package-cache.outputs.path }}
+        key: ${{ steps.fhir-package-cache.outputs.key }}
+
     # Set Firely Terminal FHIR specification and restore dependencies
     - name: Set FHIR specification and restore dependencies
       run: |
@@ -491,9 +517,16 @@ runs:
       shell: bash
       env:
         INPUT_TERMINOLOGY_SERVICE_BFARM_ENABLED: ${{ inputs.TERMINOLOGY_SERVICE_BFARM_ENABLED }}
-        
 
-        
+    # Saved here, before validation and before JAVA_SNAPSHOT_ENABLED removes the package cache
+    - name: Save FHIR package cache
+      if: steps.fhir-package-cache.outputs.key != '' && steps.fhir-package-cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.fhir-package-cache.outputs.path }}
+        key: ${{ steps.fhir-package-cache.outputs.key }}
+
+
     # --------------------------------------------------------------------------------------------------- #
     #                                                 SUSHI                                               #
     # --------------------------------------------------------------------------------------------------- #
@@ -690,6 +723,26 @@ runs:
       env:
         INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
     
+    # Keyed on the download URL, so both the version and a custom download location get their own cache
+    - name: Determine Java validator cache key
+      id: java-validator-cache
+      if: inputs.JAVA_VALIDATION_ENABLED == 'true'
+      run: |
+        JAVA_VALIDATOR_DOWNLOAD_LOCATION=$(eval echo "$JAVA_VALIDATOR_DOWNLOAD_LOCATION")
+        echo "key=java-validator-${JAVA_VALIDATOR_VERSION}-$(echo -n "$JAVA_VALIDATOR_DOWNLOAD_LOCATION" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      shell: bash
+      env:
+       JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
+       JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
+
+    - name: Restore Java validator cache
+      id: java-validator-cache-restore
+      if: steps.java-validator-cache.outputs.key != ''
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: validator_cli.jar
+        key: ${{ steps.java-validator-cache.outputs.key }}
+
     - name: Download Java Validator
       run: |
         if $INPUT_JAVA_VALIDATION_ENABLED; then
@@ -698,15 +751,27 @@ runs:
           echo "JAVA_VALIDATOR_VERSION: $JAVA_VALIDATOR_VERSION"
           JAVA_VALIDATOR_DOWNLOAD_LOCATION=$(eval echo "$JAVA_VALIDATOR_DOWNLOAD_LOCATION")
           echo "JAVA_VALIDATOR_DOWNLOAD_LOCATION: $JAVA_VALIDATOR_DOWNLOAD_LOCATION"
-          
-          wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION -O validator_cli.jar
+
+          if [[ "$CACHE_HIT" == "true" ]]; then
+            echo "Using the Java validator from the cache"
+          else
+            wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION -O validator_cli.jar
+          fi
         fi
       shell: bash
       env:
        JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
        JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-          
+       CACHE_HIT: ${{ steps.java-validator-cache-restore.outputs.cache-hit }}
+
+    - name: Save Java validator cache
+      if: steps.java-validator-cache.outputs.key != '' && steps.java-validator-cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: validator_cli.jar
+        key: ${{ steps.java-validator-cache.outputs.key }}
+
     - name: Validate all conformance resources in scope of the repository
       run: |
 

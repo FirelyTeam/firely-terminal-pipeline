@@ -117,6 +117,14 @@ You can specify the following options using the ["with" syntax](https://docs.git
         - `true`: a `package.json` is generated from `sushi-config.yaml`, overwriting an existing `package.json`. The action fails if there is no `sushi-config.yaml`.
         - `false`: an existing `package.json` is used. If there is no `package.json`, one is generated from `sushi-config.yaml`.
 
+## Caching
+
+The action caches the FHIR package cache (`~/.fhir/packages`) and the Java validator JAR with [GitHub Actions caches](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching), so later runs and other jobs in the same repository don't download them again.
+
+- The FHIR package cache is keyed on `package.json`, `FIRELY_TERMINAL_VERSION` and `TERMINOLOGY_SERVICE_BFARM_ENABLED`. It is only used when the .NET validator is enabled. It is not used when a dependency has no fixed version (`current`, `dev`, `latest` or a version range), because those change over time.
+- The Java validator JAR is keyed on `JAVA_VALIDATOR_VERSION` and `JAVA_VALIDATOR_DOWNLOAD_LOCATION`.
+- To force a fresh download, delete the cache under **Actions > Caches** in your repository.
+
 ## Known Issues
 - Examples in `PATH_TO_EXAMPLES` are not validated by the .NET validator, because Firely Terminal Quality Control can't distinguish examples from conformance resources. Enable `JAVA_VALIDATION_ENABLED` to validate examples.
 - The Java validator validates each folder in `PATH_TO_CONFORMANCE_RESOURCES` and `PATH_TO_EXAMPLES` separately (with all conformance resource folders loaded as context). Only `.json` and `.xml` files directly in these folders are validated; subfolders are not included.
@@ -127,6 +135,7 @@ Release notes for v0.6.1 and later are published on the [Releases page](https://
 
 ### Next release
 
+- Cache the FHIR packages and the Java validator JAR between runs. See [Caching](#caching).
 - Breaking: Upgrade Firely Terminal to v4.0.0, which requires the .NET 10 SDK. Update `dotnet-version` in your `actions/setup-dotnet` step to `10.0.x`, or pin `FIRELY_TERMINAL_VERSION: '3.5.0'` to stay on .NET 8. See [.NET version](#net-version).
 - Fix: Support FHIR 4.3.0 (R4B release). Previously only the R4B ballot version 4.1.0 was recognized, so .NET validation of R4B projects failed.
 
