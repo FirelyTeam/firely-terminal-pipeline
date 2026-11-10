@@ -92,6 +92,12 @@ You can specify the following options using the ["with" syntax](https://docs.git
     - Cache the FHIR packages restored by Firely Terminal between runs. See [Caching](#caching).
 * `FIRELY_TERMINAL_VALIDATOR_ENGINE` (optional)
     - Validator engine to use for .NET validation. Available options: `firely`, `netsdk` (lowercase). From Firely Terminal 3.5.0 onwards, the default validator engine changed; use `netsdk` to use the old validator engine from pre-3.5.0 versions. If not specified, Firely Terminal uses its built-in default.
+* `DOTNET_FAIL_ON` (optional, default: `error`)
+    - Lowest severity of a Quality Control issue that fails the build: `error`, `warning` or `info`. Ignored when `EXPECTED_FAILS` contains `VALIDATION_CONFORMANCE_DOTNET`. Requires Firely Terminal 4.0.0 or later; older versions always fail on errors.
+* `REPORT_ARTIFACT_NAME` (optional, default: `fhir-validation-report`)
+    - Name of the artifact holding the Quality Control report, see [Reports](#reports). Must be unique within a workflow run, so set it per job when you use the action more than once (e.g. in a matrix).
+* `REPORT_RENDERER_ENABLED` (optional, default: `true`)
+    - Render the Quality Control report as annotations and a job summary table, using the third-party action [validation-outcome-markdown-renderer](https://github.com/patrick-werner/validation-outcome-markdown-renderer). Set to `false` to skip it; the artifact then only holds `validation.json`. GitHub still downloads the renderer when the job starts, so this does not help if your organization's allowed-actions policy blocks it.
 * `TERMINOLOGY_SERVICE_BFARM_ENABLED` (optional, default: `false`)
     - Download terminology packages from the central terminology server for Germany ([ZTS](https://terminologien.bfarm.de/fhirpackages.html)). Packages listed under `devDependencies` in `package.json` that exist in the ZTS catalog are downloaded into the Firely Terminal package cache. Requires the .NET SDK.
 
@@ -129,6 +135,28 @@ Set `FHIR_PACKAGE_CACHE_ENABLED: true` to keep the Firely Terminal package cache
 - The cache is keyed on `package.json`, the installed Firely Terminal version and `TERMINOLOGY_SERVICE_BFARM_ENABLED`. It is only used when the .NET validator is enabled. It is not used when a dependency has no fixed version (`current`, `dev`, `latest` or a version range), because those change over time.
 - To force a fresh download, delete the cache under **Actions > Caches** in your repository.
 
+## Reports
+
+With Firely Terminal 4.0.0 or later, the Quality Control results are saved as a Bundle of OperationOutcomes and shown in three places, also when the check fails:
+
+- **Job summary**: a table of errors and warnings on the workflow run's Summary page, rendered by [validation-outcome-markdown-renderer](https://github.com/patrick-werner/validation-outcome-markdown-renderer).
+- **Annotations**: each error and warning appears as an annotation on the run. GitHub shows at most 10 errors and 10 warnings per step; the job summary and artifact have them all.
+- **Artifact** (`REPORT_ARTIFACT_NAME`): `validation.json` (the OperationOutcome bundle) and `validation-summary.md` (the same table as markdown, e.g. to post as a PR comment).
+
+Set `REPORT_RENDERER_ENABLED: false` to skip the job summary and annotations; the artifact then only holds `validation.json`.
+
+To suppress known issues, add a `suppress` list to the rule in your `.rules.yaml` (see [Suppress](https://docs.fire.ly/projects/Simplifier/quality_control/actions.html#suppress) in the [Quality Control documentation](https://docs.fire.ly/projects/Simplifier/quality_control/quality_control.html)). Suppressed issues don't fail the build and don't appear in the report. An entry is an issue code (the `details.coding` code in `validation.json`, e.g. `6006`, or a constraint key such as `eld-16`), `system|code`, or `system|` for all codes of a system. Suppression applies to every resource the rule checks; to suppress an issue for some files only, give those files a separate rule using `files` (glob patterns) or `filter` (FHIRPath).
+
+```yaml
+- action: validate
+  name: validate-resources
+  category: Resource
+  suppress:
+    - 6006   # Terminology service failed while validating a code
+```
+
+The action does not render Java validator results. To save them to a file, add `-output <file>` to `JAVA_VALIDATION_OPTIONS`. The Java validator runs once per folder, so with more than one folder each run overwrites the same file.
+
 ## Known Issues
 - Examples in `PATH_TO_EXAMPLES` are not validated by the .NET validator, because Firely Terminal Quality Control can't distinguish examples from conformance resources. Enable `JAVA_VALIDATION_ENABLED` to validate examples.
 - The Java validator validates each folder in `PATH_TO_CONFORMANCE_RESOURCES` and `PATH_TO_EXAMPLES` separately (with all conformance resource folders loaded as context). Only `.json` and `.xml` files directly in these folders are validated; subfolders are not included.
@@ -141,6 +169,9 @@ Release notes for v0.6.1 and later are published on the [Releases page](https://
 
 - Feature: `FHIR_PACKAGE_CACHE_ENABLED` caches the FHIR packages between runs. See [Caching](#caching).
 - Breaking: Upgrade Firely Terminal to v4.0.0, which requires the .NET 10 SDK. Update `dotnet-version` in your `actions/setup-dotnet` step to `10.0.x`, or pin `FIRELY_TERMINAL_VERSION: '3.5.0'` to stay on .NET 8. See [.NET version](#net-version).
+- New: Firely Terminal Quality Control results are published as a job summary, annotations and a downloadable artifact. See [Reports](#reports). Set `REPORT_RENDERER_ENABLED: false` to skip the summary and annotations.
+- New: `DOTNET_FAIL_ON` sets the issue severity that fails the build (uses `fhir check --failOn`, which replaces the deprecated `--fail`).
+- Fix: A failing `fhir restore` now fails the action. With Firely Terminal 4.0.0 the old check for the text "Cannot restore" no longer matched, so restore errors were ignored.
 - Fix: Support FHIR 4.3.0 (R4B release). Previously only the R4B ballot version 4.1.0 was recognized, so .NET validation of R4B projects failed.
 
 ### v0.6.0 - 2025-01-01

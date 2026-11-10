@@ -1,0 +1,8 @@
+# Keeps the actions used in action.yml (and in .github/workflows) up to date,
+# including the SHA-pinned validation-outcome-markdown-renderer.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
