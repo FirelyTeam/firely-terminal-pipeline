@@ -723,26 +723,6 @@ runs:
       env:
         INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
     
-    # Keyed on the download URL, so both the version and a custom download location get their own cache
-    - name: Determine Java validator cache key
-      id: java-validator-cache
-      if: inputs.JAVA_VALIDATION_ENABLED == 'true'
-      run: |
-        JAVA_VALIDATOR_DOWNLOAD_LOCATION=$(eval echo "$JAVA_VALIDATOR_DOWNLOAD_LOCATION")
-        echo "key=java-validator-${JAVA_VALIDATOR_VERSION}-$(echo -n "$JAVA_VALIDATOR_DOWNLOAD_LOCATION" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
-      shell: bash
-      env:
-       JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
-       JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
-
-    - name: Restore Java validator cache
-      id: java-validator-cache-restore
-      if: steps.java-validator-cache.outputs.key != ''
-      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-      with:
-        path: validator_cli.jar
-        key: ${{ steps.java-validator-cache.outputs.key }}
-
     - name: Download Java Validator
       run: |
         if $INPUT_JAVA_VALIDATION_ENABLED; then
@@ -752,25 +732,13 @@ runs:
           JAVA_VALIDATOR_DOWNLOAD_LOCATION=$(eval echo "$JAVA_VALIDATOR_DOWNLOAD_LOCATION")
           echo "JAVA_VALIDATOR_DOWNLOAD_LOCATION: $JAVA_VALIDATOR_DOWNLOAD_LOCATION"
 
-          if [[ "$CACHE_HIT" == "true" ]]; then
-            echo "Using the Java validator from the cache"
-          else
-            wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION -O validator_cli.jar
-          fi
+          wget -q $JAVA_VALIDATOR_DOWNLOAD_LOCATION -O validator_cli.jar
         fi
       shell: bash
       env:
        JAVA_VALIDATOR_VERSION: ${{ inputs.JAVA_VALIDATOR_VERSION }}
        JAVA_VALIDATOR_DOWNLOAD_LOCATION: ${{ inputs.JAVA_VALIDATOR_DOWNLOAD_LOCATION }}
        INPUT_JAVA_VALIDATION_ENABLED: ${{ inputs.JAVA_VALIDATION_ENABLED }}
-       CACHE_HIT: ${{ steps.java-validator-cache-restore.outputs.cache-hit }}
-
-    - name: Save Java validator cache
-      if: steps.java-validator-cache.outputs.key != '' && steps.java-validator-cache-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-      with:
-        path: validator_cli.jar
-        key: ${{ steps.java-validator-cache.outputs.key }}
 
     - name: Validate all conformance resources in scope of the repository
       run: |
