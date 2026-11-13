@@ -716,7 +716,16 @@ runs:
           rc=$?
           set -e
 
-          if [ -f "$REPORT" ]; then echo "report=$REPORT" >> "$GITHUB_OUTPUT"; fi
+          if [ -f "$REPORT" ]; then
+            echo "report=$REPORT" >> "$GITHUB_OUTPUT"
+            # Without issues, Firely Terminal writes a Bundle without entries, which the renderer rejects
+            # ponytail: drop this once the renderer accepts a Bundle without entries
+            if jq -e '(.entry // []) | length > 0' "$REPORT" > /dev/null; then
+              echo "has-issues=true" >> "$GITHUB_OUTPUT"
+            elif $INPUT_REPORT_RENDERER_ENABLED; then
+              printf '### Firely Terminal Quality Control\n\nNo issues found.\n' | tee "$RUNNER_TEMP/fhir-check/validation-summary.md" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
           exit $rc
         fi
       shell: bash
@@ -725,11 +734,12 @@ runs:
         INPUT_DOTNET_VALIDATION_ENABLED: ${{ inputs.DOTNET_VALIDATION_ENABLED }}
         INPUT_DOTNET_FAIL_ON: ${{ inputs.DOTNET_FAIL_ON }}
         INPUT_PATH_TO_QUALITY_CONTROL_RULES: ${{ inputs.PATH_TO_QUALITY_CONTROL_RULES }}
+        INPUT_REPORT_RENDERER_ENABLED: ${{ inputs.REPORT_RENDERER_ENABLED }}
 
     # Renders the OperationOutcomes as annotations and a table on the job summary page.
     # continue-on-error: the renderer fails on any error by design; pass/fail is decided by DOTNET_FAIL_ON above.
     - name: Render Quality Control report
-      if: always() && steps.qc.outputs.report != '' && inputs.REPORT_RENDERER_ENABLED == 'true'
+      if: always() && steps.qc.outputs.has-issues == 'true' && inputs.REPORT_RENDERER_ENABLED == 'true'
       continue-on-error: true
       uses: patrick-werner/validation-outcome-markdown-renderer@09f430c50c24c4d8666158efa4922dd300de6b1b # v1.5.0
       with:

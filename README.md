@@ -167,6 +167,7 @@ Release notes for v0.6.1 and later are published on the [Releases page](https://
 
 ### Next release
 
+- Fix: When Quality Control finds no issues, the job summary says "No issues found" instead of the report renderer failing with `Unsupported resource type: Bundle`.
 - Feature: `FHIR_PACKAGE_CACHE_ENABLED` caches the FHIR packages between runs. See [Caching](#caching).
 - Breaking: Upgrade Firely Terminal to v4.0.0, which requires the .NET 10 SDK. Update `dotnet-version` in your `actions/setup-dotnet` step to `10.0.x`, or pin `FIRELY_TERMINAL_VERSION: '3.5.0'` to stay on .NET 8. See [.NET version](#net-version).
 - New: Firely Terminal Quality Control results are published as a job summary, annotations and a downloadable artifact. See [Reports](#reports). Set `REPORT_RENDERER_ENABLED: false` to skip the summary and annotations.
