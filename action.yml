@@ -53,7 +53,7 @@ inputs:
     default: false
   JAVA_VALIDATOR_VERSION:
     description: 'Version of org.hl7.fhir.core library used for Java-based validation'
-    default: '7.0.5'
+    default: '7.0.6'
     required: true
   JAVA_VALIDATOR_DOWNLOAD_LOCATION:
     description: 'URL from which to download the Java validator JAR'
